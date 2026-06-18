@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRouter from './routes/auth';
 import starsRouter from './routes/stars';
 import eventsRouter from './routes/events';
+import planningRouter from './routes/planning';
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.get('/health', (_req, res) => {
 app.use('/auth', authRouter);
 app.use('/stars', starsRouter);
 app.use('/events', eventsRouter);
+app.use('/events', planningRouter);
 
 const PORT = process.env.PORT ?? 3000;
 app.listen(PORT, () => {
