@@ -13,6 +13,7 @@ const ReferentDashboard = lazy(() => import('@/pages/referent/ReferentDashboard'
 const PlanningListPage = lazy(() => import('@/pages/referent/PlanningListPage'))
 const EventDetailPage = lazy(() => import('@/pages/referent/EventDetailPage'))
 const EquipePage = lazy(() => import('@/pages/referent/EquipePage'))
+const StarDetailPage = lazy(() => import('@/pages/referent/StarDetailPage'))
 const AlertesPage = lazy(() => import('@/pages/referent/AlertesPage'))
 const ValidationsPage = lazy(() => import('@/pages/referent/ValidationsPage'))
 const CoordDashboard = lazy(() => import('@/pages/coordination/CoordDashboard'))
@@ -62,6 +63,7 @@ export function AppRouter() {
           <Route path="/referent/planning" element={<RequireAuth><ReferentLayout><PlanningListPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/planning/:id" element={<RequireAuth><ReferentLayout><EventDetailPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/equipe" element={<RequireAuth><ReferentLayout><EquipePage /></ReferentLayout></RequireAuth>} />
+          <Route path="/referent/equipe/:id" element={<RequireAuth><ReferentLayout><StarDetailPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/alertes" element={<RequireAuth><ReferentLayout><AlertesPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/validations" element={<RequireAuth><ReferentLayout><ValidationsPage /></ReferentLayout></RequireAuth>} />
 

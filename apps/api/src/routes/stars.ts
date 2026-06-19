@@ -78,6 +78,25 @@ router.get('/:id', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'VIE_D
   }
 });
 
+// GET /stars/:id/assignments
+router.get('/:id/assignments', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'VIE_DES_STARS', 'ADMINISTRATEUR'), async (req, res) => {
+  const id = parseInt(req.params['id'] as string);
+  if (isNaN(id)) { res.status(400).json({ error: 'Invalid id' }); return; }
+  try {
+    const assignments = await prisma.assignment.findMany({
+      where: { starId: id },
+      orderBy: { event: { date: 'desc' } },
+      select: {
+        id: true, deptCode: true, statut: true, conflit: true, confirme: true, createdAt: true,
+        event: { select: { id: true, nom: true, date: true, debut: true, fin: true, statut: true } },
+      },
+    });
+    res.json(assignments);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 const UpdateStarSchema = z.object({
   prenom: z.string().min(1).optional(),
   nom: z.string().min(1).optional(),

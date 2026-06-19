@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/primitives/Card'
 import { Badge } from '@/components/primitives/Badge'
 import { Avatar } from '@/components/primitives/Avatar'
@@ -18,6 +19,7 @@ function fiabColor(f: number) {
 }
 
 export default function EquipePage() {
+  const navigate = useNavigate()
   const [starList, setStarList] = useState<Star[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('all')
@@ -57,7 +59,7 @@ export default function EquipePage() {
       <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
         {loading && <div style={{ color: T.muted, fontSize: '13px', padding: '20px 0' }}>Chargement…</div>}
         {filtered.map((star) => (
-          <Card key={star.id} pad={16} hover>
+          <Card key={star.id} pad={16} hover onClick={() => navigate(`/referent/equipe/${star.id}`)}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               <Avatar name={`${star.prenom} ${star.nom}`} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
