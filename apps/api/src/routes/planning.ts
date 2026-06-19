@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { auth } from '../middleware/auth';
 import { requireRole } from '../middleware/roles';
 import { genererPlanning, PlanStar, PlanEvent } from '../planning/engine';
+import { sendMail } from '../services/mailer';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -101,13 +102,49 @@ router.post('/:id/publish', auth, requireRole('REFERENT', 'COORDINATION_GENERALE
       return;
     }
 
-    await prisma.event.update({ where: { id }, data: { statut: 'PUBLIE' } });
+    const eventFull = await prisma.event.update({
+      where: { id },
+      data: { statut: 'PUBLIE' },
+    });
 
-    // Promote assignments to Publiee
+    // Promote assignments to Publiee and load star contact info
     await prisma.assignment.updateMany({
       where: { eventId: id, statut: 'Proposee' },
       data: { statut: 'Publiee' },
     });
+
+    const assignments = await prisma.assignment.findMany({
+      where: { eventId: id, statut: 'Publiee' },
+      include: { star: { include: { user: { select: { email: true } } } } },
+    });
+
+    // Send notification emails (fire & forget — don't block response)
+    const eventDate = eventFull.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    Promise.all(
+      assignments.map((a) =>
+        sendMail({
+          to: a.star.user.email,
+          subject: `[OBEY] Vous êtes affecté(e) — ${eventFull.nom}`,
+          text: `Bonjour ${a.star.prenom},\n\nVous êtes affecté(e) au service ${eventFull.nom} (${eventDate}) au département ${a.deptCode}.\n\nConnectez-vous sur OBEY pour confirmer votre présence.\n\nMerci !`,
+          html: `<p>Bonjour <strong>${a.star.prenom}</strong>,</p><p>Vous êtes affecté(e) au service <strong>${eventFull.nom}</strong> (${eventDate}) au département <strong>${a.deptCode}</strong>.</p><p>Connectez-vous sur OBEY pour confirmer votre présence.</p><p>Merci !</p>`,
+        }).catch((err: Error) => console.error(`[MAIL] Failed for ${a.star.user.email}:`, err.message))
+      )
+    );
+
+    // Create internal notifications
+    await Promise.all(
+      assignments.map((a) =>
+        prisma.notification.create({
+          data: {
+            userId: a.star.userId,
+            titre: `Affectation — ${eventFull.nom}`,
+            msg: `Vous êtes affecté(e) au département ${a.deptCode} le ${eventDate}.`,
+            canal: 'INTERNE',
+            tone: 'primary',
+          },
+        })
+      )
+    );
 
     // Audit log
     await prisma.auditLog.create({
@@ -120,7 +157,7 @@ router.post('/:id/publish', auth, requireRole('REFERENT', 'COORDINATION_GENERALE
       },
     });
 
-    res.json({ message: 'Planning published', eventId: id });
+    res.json({ message: 'Planning published', eventId: id, notified: assignments.length });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }

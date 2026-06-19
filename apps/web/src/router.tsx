@@ -13,6 +13,7 @@ const PlanningListPage = lazy(() => import('@/pages/referent/PlanningListPage'))
 const EventDetailPage = lazy(() => import('@/pages/referent/EventDetailPage'))
 const EquipePage = lazy(() => import('@/pages/referent/EquipePage'))
 const AlertesPage = lazy(() => import('@/pages/referent/AlertesPage'))
+const ValidationsPage = lazy(() => import('@/pages/referent/ValidationsPage'))
 const StarAccueil = lazy(() => import('@/pages/star/StarAccueil'))
 const StarPlanning = lazy(() => import('@/pages/star/StarPlanning'))
 const StarIndispos = lazy(() => import('@/pages/star/StarIndispos'))
@@ -59,6 +60,7 @@ export function AppRouter() {
           <Route path="/referent/planning/:id" element={<RequireAuth><ReferentLayout><EventDetailPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/equipe" element={<RequireAuth><ReferentLayout><EquipePage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/alertes" element={<RequireAuth><ReferentLayout><AlertesPage /></ReferentLayout></RequireAuth>} />
+          <Route path="/referent/validations" element={<RequireAuth><ReferentLayout><ValidationsPage /></ReferentLayout></RequireAuth>} />
 
           {/* Espace STAR mobile */}
           <Route path="/star" element={<RequireAuth><StarLayout><StarAccueil /></StarLayout></RequireAuth>} />
