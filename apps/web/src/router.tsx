@@ -1,12 +1,17 @@
 import React, { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { ReferentLayout } from '@/pages/referent/ReferentLayout'
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const PendingPage = lazy(() => import('@/pages/auth/PendingPage'))
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
-const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
+const ReferentDashboard = lazy(() => import('@/pages/referent/ReferentDashboard'))
+const PlanningListPage = lazy(() => import('@/pages/referent/PlanningListPage'))
+const EventDetailPage = lazy(() => import('@/pages/referent/EventDetailPage'))
+const EquipePage = lazy(() => import('@/pages/referent/EquipePage'))
+const AlertesPage = lazy(() => import('@/pages/referent/AlertesPage'))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { state } = useAuth()
@@ -37,14 +42,25 @@ export function AppRouter() {
     <BrowserRouter>
       <Suspense fallback={<Loader />}>
         <Routes>
+          {/* Auth */}
           <Route path="/connexion" element={<RequireGuest><LoginPage /></RequireGuest>} />
           <Route path="/inscription" element={<RequireGuest><RegisterPage /></RequireGuest>} />
           <Route path="/attente" element={<PendingPage />} />
           <Route path="/mot-de-passe-oublie" element={<RequireGuest><ForgotPasswordPage /></RequireGuest>} />
-          <Route path="/" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+
+          {/* Espace Référent */}
+          <Route path="/referent" element={<RequireAuth><ReferentLayout><ReferentDashboard /></ReferentLayout></RequireAuth>} />
+          <Route path="/referent/planning" element={<RequireAuth><ReferentLayout><PlanningListPage /></ReferentLayout></RequireAuth>} />
+          <Route path="/referent/planning/:id" element={<RequireAuth><ReferentLayout><EventDetailPage /></ReferentLayout></RequireAuth>} />
+          <Route path="/referent/equipe" element={<RequireAuth><ReferentLayout><EquipePage /></ReferentLayout></RequireAuth>} />
+          <Route path="/referent/alertes" element={<RequireAuth><ReferentLayout><AlertesPage /></ReferentLayout></RequireAuth>} />
+
+          {/* Dispatch racine → référent si connecté */}
+          <Route path="/" element={<RequireAuth><Navigate to="/referent" replace /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
   )
 }
+
