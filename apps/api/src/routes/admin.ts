@@ -136,4 +136,96 @@ router.post('/users/:id/reject', auth, requireRole('REFERENT', 'COORDINATION_GEN
   }
 });
 
+// GET /admin/parameters
+router.get('/parameters', auth, requireRole('ADMINISTRATEUR'), async (_req, res) => {
+  try {
+    const params = await prisma.parameter.findMany({ orderBy: [{ groupe: 'asc' }, { cle: 'asc' }] });
+    res.json(params.map(p => ({ key: p.cle, value: p.val, description: p.desc, label: p.label, type: p.type, unite: p.unite, groupe: p.groupe })));
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /admin/parameters/:key
+router.put('/parameters/:key', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const key = req.params['key'] as string;
+  const { value } = req.body as { value: string };
+  if (!value && value !== '0') { res.status(400).json({ error: 'value required' }); return; }
+  try {
+    const param = await prisma.parameter.update({ where: { cle: key }, data: { val: value } });
+    await prisma.auditLog.create({
+      data: { userId: req.user!.id, action: 'UPDATE_PARAMETER', entite: 'Parameter', entityId: key, meta: { value }, tone: 'primary' },
+    });
+    res.json({ key: param.cle, value: param.val });
+  } catch {
+    res.status(500).json({ error: 'Parameter not found or internal error' });
+  }
+});
+
+// GET /admin/audit-logs
+router.get('/audit-logs', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const limit = Math.min(parseInt((req.query['limit'] as string) ?? '50'), 200);
+  const offset = parseInt((req.query['offset'] as string) ?? '0');
+  try {
+    const logs = await prisma.auditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      skip: offset,
+      take: limit,
+      include: { user: { select: { email: true, star: { select: { prenom: true, nom: true } } } } },
+    });
+    const total = await prisma.auditLog.count();
+    res.json({ logs, total });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /admin/roles — all users with their roles
+router.get('/roles', auth, requireRole('ADMINISTRATEUR'), async (_req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: { statut: 'Actif' },
+      select: {
+        id: true, email: true, statut: true,
+        star: { select: { prenom: true, nom: true } },
+        roles: { select: { id: true, type: true, deptCode: true } },
+      },
+      orderBy: { id: 'asc' },
+    });
+    res.json(users);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /admin/roles — assign role to user
+router.post('/roles', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const { userId, type, deptCode } = req.body as { userId: number; type: string; deptCode?: string };
+  if (!userId || !type) { res.status(400).json({ error: 'userId and type required' }); return; }
+  try {
+    const role = await prisma.role.create({ data: { userId, type: type as never, deptCode: deptCode ?? null } });
+    await prisma.auditLog.create({
+      data: { userId: req.user!.id, action: 'ASSIGN_ROLE', entite: 'UserRole', entityId: String(userId as number), meta: { type, deptCode }, tone: 'primary' },
+    });
+    res.status(201).json(role);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /admin/roles/:id
+router.delete('/roles/:id', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const id = parseInt(req.params['id'] as string);
+  if (isNaN(id)) { res.status(400).json({ error: 'Invalid id' }); return; }
+  try {
+    await prisma.role.delete({ where: { id } });
+    await prisma.auditLog.create({
+      data: { userId: req.user!.id, action: 'REVOKE_ROLE', entite: 'UserRole', entityId: String(id), tone: 'warn' },
+    });
+    res.json({ message: 'Role removed' });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
