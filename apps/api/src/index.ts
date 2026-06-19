@@ -5,6 +5,7 @@ import authRouter from './routes/auth';
 import starsRouter from './routes/stars';
 import eventsRouter from './routes/events';
 import planningRouter from './routes/planning';
+import meRouter from './routes/me';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use('/auth', authRouter);
 app.use('/stars', starsRouter);
 app.use('/events', eventsRouter);
 app.use('/events', planningRouter);
+app.use('/me', meRouter);
 
 const PORT = process.env.PORT ?? 3000;
 app.listen(PORT, () => {
