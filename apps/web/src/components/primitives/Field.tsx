@@ -10,9 +10,10 @@ type FieldProps = {
   hint?: string
   right?: React.ReactNode
   disabled?: boolean
+  autoComplete?: string
 }
 
-export function Field({ label, value, onChange, type = 'text', placeholder, hint, right, disabled }: FieldProps) {
+export function Field({ label, value, onChange, type = 'text', placeholder, hint, right, disabled, autoComplete }: FieldProps) {
   const [focused, setFocused] = useState(false)
 
   return (
@@ -37,6 +38,7 @@ export function Field({ label, value, onChange, type = 'text', placeholder, hint
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
+          autoComplete={autoComplete}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           style={{

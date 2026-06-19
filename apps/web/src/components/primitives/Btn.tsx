@@ -9,6 +9,7 @@ type BtnProps = {
   icon?: string
   onClick?: () => void
   disabled?: boolean
+  loading?: boolean
   type?: 'button' | 'submit' | 'reset'
   children?: React.ReactNode
   style?: React.CSSProperties
@@ -38,23 +39,25 @@ export function Btn({
   icon,
   onClick,
   disabled,
+  loading,
   type = 'button',
   children,
   style,
   className,
 }: BtnProps) {
+  const isDisabled = disabled || loading
   const base: React.CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
     lineHeight: 1,
-    cursor: disabled ? 'not-allowed' : 'pointer',
+    cursor: isDisabled ? 'not-allowed' : 'pointer',
     border: 'none',
     transition: 'opacity .15s',
     borderRadius: '16px',
     fontFamily: 'Figtree, sans-serif',
     fontWeight: 600,
-    opacity: disabled ? 0.5 : 1,
+    opacity: isDisabled ? 0.5 : 1,
     ...(full ? { width: '100%', justifyContent: 'center' } : {}),
     ...VARIANT_STYLES[variant],
     ...SIZE_STYLES[size],
@@ -65,11 +68,12 @@ export function Btn({
     <button
       type={type}
       style={base}
-      disabled={disabled}
+      disabled={isDisabled}
       onClick={onClick}
       className={`ob-press${className ? ` ${className}` : ''}`}
     >
-      {icon && <Icon name={icon} size={size === 'sm' ? 14 : size === 'lg' ? 18 : 16} />}
+      {loading && <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', animation: 'ob-spin 0.6s linear infinite' }} />}
+      {!loading && icon && <Icon name={icon} size={size === 'sm' ? 14 : size === 'lg' ? 18 : 16} />}
       {children}
     </button>
   )

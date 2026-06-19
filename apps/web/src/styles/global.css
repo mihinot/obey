@@ -29,6 +29,10 @@ body {
   from { width: 0; }
 }
 
+@keyframes ob-spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes obPop {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.12); }
