@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { ReferentLayout } from '@/pages/referent/ReferentLayout'
 import { StarLayout } from '@/pages/star/StarLayout'
 import { CoordLayout } from '@/pages/coordination/CoordLayout'
+import { PastoralLayout } from '@/pages/pastoral/PastoralLayout'
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
@@ -16,6 +17,9 @@ const EquipePage = lazy(() => import('@/pages/referent/EquipePage'))
 const StarDetailPage = lazy(() => import('@/pages/referent/StarDetailPage'))
 const AlertesPage = lazy(() => import('@/pages/referent/AlertesPage'))
 const ValidationsPage = lazy(() => import('@/pages/referent/ValidationsPage'))
+const PastoralDashboard = lazy(() => import('@/pages/pastoral/PastoralDashboard'))
+const PastoralStarDetailPage = lazy(() => import('@/pages/pastoral/PastoralStarDetailPage'))
+const DiscipulatPage = lazy(() => import('@/pages/pastoral/DiscipulatPage'))
 const CoordDashboard = lazy(() => import('@/pages/coordination/CoordDashboard'))
 const CoordParametresPage = lazy(() => import('@/pages/coordination/CoordParametresPage'))
 const StarAccueil = lazy(() => import('@/pages/star/StarAccueil'))
@@ -66,6 +70,11 @@ export function AppRouter() {
           <Route path="/referent/equipe/:id" element={<RequireAuth><ReferentLayout><StarDetailPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/alertes" element={<RequireAuth><ReferentLayout><AlertesPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/validations" element={<RequireAuth><ReferentLayout><ValidationsPage /></ReferentLayout></RequireAuth>} />
+
+          {/* Espace Corps Pastoral */}
+          <Route path="/pastoral" element={<RequireAuth><PastoralLayout><PastoralDashboard /></PastoralLayout></RequireAuth>} />
+          <Route path="/pastoral/stars/:id" element={<RequireAuth><PastoralLayout><PastoralStarDetailPage /></PastoralLayout></RequireAuth>} />
+          <Route path="/pastoral/disciples" element={<RequireAuth><PastoralLayout><DiscipulatPage /></PastoralLayout></RequireAuth>} />
 
           {/* Espace Coordination */}
           <Route path="/coordination" element={<RequireAuth><CoordLayout><CoordDashboard /></CoordLayout></RequireAuth>} />
