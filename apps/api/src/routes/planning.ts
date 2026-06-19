@@ -61,8 +61,11 @@ router.post('/:id/generate', auth, requireRole('REFERENT', 'COORDINATION_GENERAL
       where: { eventId: id, statut: { in: ['Proposee', 'Validee'] } },
     });
 
+    const persistedStarIds = new Set<number>();
     for (const dept of result.depts) {
       for (const sel of dept.selectionnes) {
+        if (persistedStarIds.has(sel.star.id)) continue; // skip cross-dept duplicate
+        persistedStarIds.add(sel.star.id);
         await prisma.assignment.create({
           data: {
             starId: sel.star.id,
