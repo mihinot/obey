@@ -12,14 +12,13 @@ function createTransport() {
   // If no SMTP host configured, use Ethereal-style preview (log only)
   if (!host) return null;
 
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
   return nodemailer.createTransport({
     host,
     port: parseInt(process.env.SMTP_PORT ?? '587'),
     secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+    ...(user && pass ? { auth: { user, pass } } : {}),
   });
 }
 
