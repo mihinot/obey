@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Statuts STAR
+enum StarStatut {
+  Nouveau
+  Actif
+  Occasionnel
+  EnPause
+  Ancien
+}
+
+// Cycle de vie planning
+enum EventStatut {
+  BROUILLON
+  EN_GENERATION
+  A_VALIDER
+  PUBLIE
+  ANNULE
+}
+
+// Statut affectation
+enum AssignmentStatut {
+  Proposee
+  Validee
+  Publiee
+  Confirmee
+  Desistee
+}
+
+// Type de conflit
+enum ConflitType {
+  INCOMPATIBLE
+  AVERTISSEMENT
+}
+
+// Canaux de notification
+enum NotifCanal {
+  INTERNE
+  EMAIL
+  WHATSAPP
+}
+
+// Tone (pour badges/affichage)
+enum Tone {
+  ok
+  warn
+  danger
+  primary
+  accent
+  muted
+}
+
+// Statut de compte utilisateur
+enum AccountStatut {
+  EnAttente
+  Actif
+  Suspendu
+  Refuse
+}
+
+// Rôles globaux
+enum RoleType {
+  STAR
+  REFERENT
+  COORDINATION_GENERALE
+  CORPS_PASTORAL
+  VIE_DES_STARS
+  ADMINISTRATEUR
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  passwordHash String?
+  googleId     String?       @unique
+  statut       AccountStatut @default(EnAttente)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  star          Star?
+  roles         Role[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Star {
+  id     Int    @id @default(autoincrement())
+  userId Int    @unique
+  prenom String
+  nom    String
+  tel    String @default("")
+
+  statut  StarStatut @default(Actif)
+  charge  Int        @default(0)
+  fiab    Float      @default(1.0)
+  desist  Int        @default(0)
+
+  // Données pastorales (confidentielles — Corps Pastoral uniquement)
+  baptise  Boolean @default(false)
+  f001     Boolean @default(false)
+  f101     Boolean @default(false)
+  f201     Boolean @default(false)
+  famille  String?
+  disciple Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departments   StarDept[]
+  availabilities Availability[]
+  assignments   Assignment[]
+}
+
+model Department {
+  code         String  @id
+  nom          String
+  couleur      String  @default("#9a8fb0")
+  confidentiel Boolean @default(false)
+  pilotage     Boolean @default(false)
+  actif        Boolean @default(true)
+
+  starDepts     StarDept[]
+  eventNeeds    EventNeed[]
+  assignments   Assignment[]
+  roles         Role[]
+}
+
+model StarDept {
+  starId   Int
+  deptCode String
+
+  star       Star       @relation(fields: [starId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [deptCode], references: [code], onDelete: Cascade)
+
+  @@id([starId, deptCode])
+}
+
+model Role {
+  id       Int      @id @default(autoincrement())
+  userId   Int
+  type     RoleType
+  deptCode String?  // Pour REFERENT uniquement
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department? @relation(fields: [deptCode], references: [code])
+
+  @@unique([userId, type, deptCode])
+}
+
+model EventTemplate {
+  id    Int     @id @default(autoincrement())
+  nom   String
+  actif Boolean @default(true)
+
+  needs EventTemplateNeed[]
+}
+
+model EventTemplateNeed {
+  id         Int    @id @default(autoincrement())
+  templateId Int
+  deptCode   String
+  requis     Int
+
+  template EventTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id        Int         @id @default(autoincrement())
+  nom       String
+  type      String      @default("Culte dominical")
+  date      DateTime
+  debut     String      // HH:MM
+  fin       String      // HH:MM
+  lieu      String      @default("")
+  statut    EventStatut @default(BROUILLON)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  needs       EventNeed[]
+  assignments Assignment[]
+}
+
+model EventNeed {
+  id       Int    @id @default(autoincrement())
+  eventId  Int
+  deptCode String
+  requis   Int
+
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [deptCode], references: [code])
+
+  @@unique([eventId, deptCode])
+}
+
+model Assignment {
+  id       Int              @id @default(autoincrement())
+  starId   Int
+  eventId  Int
+  deptCode String
+  role     String           @default("STAR")
+  statut   AssignmentStatut @default(Proposee)
+  confirme Boolean          @default(false)
+  conflit  ConflitType?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  star        Star        @relation(fields: [starId], references: [id])
+  event       Event       @relation(fields: [eventId], references: [id])
+  department  Department  @relation(fields: [deptCode], references: [code])
+  substitutions Substitution[]
+
+  @@unique([starId, eventId])
+}
+
+model Availability {
+  id       Int      @id @default(autoincrement())
+  starId   Int
+  dateFrom DateTime
+  dateTo   DateTime
+  motif    String   @default("")
+
+  star Star @relation(fields: [starId], references: [id], onDelete: Cascade)
+}
+
+model Substitution {
+  id           Int    @id @default(autoincrement())
+  assignmentId Int
+  replacedById Int?
+  statut       String @default("EnAttente") // EnAttente | Valide | Refuse
+
+  createdAt DateTime @default(now())
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id])
+}
+
+model Notification {
+  id     Int        @id @default(autoincrement())
+  userId Int
+  titre  String
+  msg    String
+  canal  NotifCanal @default(INTERNE)
+  lu     Boolean    @default(false)
+  tone   Tone       @default(primary)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id       Int      @id @default(autoincrement())
+  userId   Int
+  action   String
+  entite   String
+  entityId String?
+  meta     Json?
+  tone     Tone     @default(primary)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Parameter {
+  cle    String @id
+  val    String
+  type   String @default("text") // toggle | number | range | text
+  label  String
+  desc   String @default("")
+  unite  String @default("")
+  groupe String @default("general")
+}
