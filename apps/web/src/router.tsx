@@ -31,6 +31,18 @@ const StarPlanning = lazy(() => import('@/pages/star/StarPlanning'))
 const StarIndispos = lazy(() => import('@/pages/star/StarIndispos'))
 const StarProfil = lazy(() => import('@/pages/star/StarProfil'))
 
+function RoleDispatch() {
+  const { state } = useAuth()
+  if (state.status !== 'authenticated') return <Navigate to="/connexion" replace />
+  const roles = state.user.roles
+  if (roles.includes('ADMINISTRATEUR')) return <Navigate to="/admin" replace />
+  if (roles.includes('CORPS_PASTORAL')) return <Navigate to="/pastoral" replace />
+  if (roles.includes('COORDINATION_GENERALE')) return <Navigate to="/coordination" replace />
+  if (roles.includes('VIE_DES_STARS')) return <Navigate to="/coordination/equipe" replace />
+  if (roles.includes('REFERENT')) return <Navigate to="/referent" replace />
+  return <Navigate to="/star" replace />
+}
+
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { state } = useAuth()
   if (state.status === 'loading') return <Loader />
@@ -101,8 +113,8 @@ export function AppRouter() {
           <Route path="/star/indispos" element={<RequireAuth><StarLayout><StarIndispos /></StarLayout></RequireAuth>} />
           <Route path="/star/profil" element={<RequireAuth><StarLayout><StarProfil /></StarLayout></RequireAuth>} />
 
-          {/* Dispatch racine → référent si connecté */}
-          <Route path="/" element={<RequireAuth><Navigate to="/referent" replace /></RequireAuth>} />
+          {/* Dispatch racine → espace selon rôle */}
+          <Route path="/" element={<RequireAuth><RoleDispatch /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
