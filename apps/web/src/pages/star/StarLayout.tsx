@@ -3,15 +3,17 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { MobileShell } from '@/components/shells/MobileShell'
 
 const TABS = [
-  { id: 'accueil',   icon: 'home',     label: 'Accueil' },
-  { id: 'planning',  icon: 'calendar', label: 'Planning' },
-  { id: 'indispos',  icon: 'x',        label: 'Indispos' },
-  { id: 'profil',    icon: 'user',     label: 'Profil' },
+  { id: 'accueil',  icon: 'home',     label: 'Accueil' },
+  { id: 'planning', icon: 'calendar', label: 'Mes services' },
+  { id: 'agenda',   icon: 'list',     label: 'Agenda' },
+  { id: 'indispos', icon: 'x',        label: 'Indispos' },
+  { id: 'profil',   icon: 'user',     label: 'Profil' },
 ]
 
 const ROUTE: Record<string, string> = {
   accueil:  '/star',
   planning: '/star/planning',
+  agenda:   '/star/agenda',
   indispos: '/star/indispos',
   profil:   '/star/profil',
 }

@@ -32,6 +32,7 @@ const CoordDashboard = lazy(() => import('@/pages/coordination/CoordDashboard'))
 const CoordParametresPage = lazy(() => import('@/pages/coordination/CoordParametresPage'))
 const StarAccueil = lazy(() => import('@/pages/star/StarAccueil'))
 const StarPlanning = lazy(() => import('@/pages/star/StarPlanning'))
+const StarAgenda = lazy(() => import('@/pages/star/StarAgenda'))
 const StarIndispos = lazy(() => import('@/pages/star/StarIndispos'))
 const StarProfil = lazy(() => import('@/pages/star/StarProfil'))
 
@@ -116,6 +117,7 @@ export function AppRouter() {
           {/* Espace STAR mobile */}
           <Route path="/star" element={<RequireAuth><StarLayout><StarAccueil /></StarLayout></RequireAuth>} />
           <Route path="/star/planning" element={<RequireAuth><StarLayout><StarPlanning /></StarLayout></RequireAuth>} />
+          <Route path="/star/agenda" element={<RequireAuth><StarLayout><StarAgenda /></StarLayout></RequireAuth>} />
           <Route path="/star/indispos" element={<RequireAuth><StarLayout><StarIndispos /></StarLayout></RequireAuth>} />
           <Route path="/star/profil" element={<RequireAuth><StarLayout><StarProfil /></StarLayout></RequireAuth>} />
 

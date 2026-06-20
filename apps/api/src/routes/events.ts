@@ -8,10 +8,16 @@ const router = Router();
 const prisma = new PrismaClient();
 
 // GET /events
-router.get('/', auth, async (_req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
+    const { upcoming, statut } = req.query as { upcoming?: string; statut?: string }
+    const now = new Date()
     const events = await prisma.event.findMany({
-      orderBy: { date: 'desc' },
+      where: {
+        ...(upcoming === 'true' ? { date: { gte: now }, statut: 'PUBLIE' } : {}),
+        ...(statut ? { statut: statut as never } : {}),
+      },
+      orderBy: { date: upcoming === 'true' ? 'asc' : 'desc' },
       select: {
         id: true,
         nom: true,
