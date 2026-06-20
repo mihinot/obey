@@ -4,7 +4,7 @@ import { Card } from '@/components/primitives/Card'
 import { ApiError } from '@/lib/api'
 import { T } from '@/tokens'
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const BASE = import.meta.env.VITE_API_URL ?? ''
 
 function api<R>(path: string): Promise<R> {
   const token = localStorage.getItem('accessToken')

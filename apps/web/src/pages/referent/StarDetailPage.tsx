@@ -8,7 +8,7 @@ import { Btn } from '@/components/primitives/Btn'
 import { stars, type Star, ApiError } from '@/lib/api'
 import { T, DEPT_COLORS } from '@/tokens'
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const BASE = import.meta.env.VITE_API_URL ?? ''
 
 function api<R>(path: string, init?: RequestInit): Promise<R> {
   const token = localStorage.getItem('accessToken')
