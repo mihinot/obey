@@ -6,7 +6,7 @@ import { Avatar } from '@/components/primitives/Avatar'
 import { ApiError } from '@/lib/api'
 import { T, DEPT_COLORS } from '@/tokens'
 
-const BASE = import.meta.env.VITE_API_URL ?? ''
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function api<T>(path: string, init?: RequestInit): Promise<T> {
   const token = localStorage.getItem('accessToken')

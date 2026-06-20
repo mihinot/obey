@@ -5,10 +5,7 @@
   "scripts": {
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:web": "npm run dev --workspace=apps/web",
-    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
-    "build:web": "npm run build --workspace=apps/web",
-    "build:api": "npm run build --workspace=apps/api",
-    "start:prod": "npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma && node apps/api/dist/index.js"
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

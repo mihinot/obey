@@ -1,6 +1,6 @@
 import { ApiError } from './api'
 
-const BASE = import.meta.env.VITE_API_URL ?? ''
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = localStorage.getItem('accessToken')
