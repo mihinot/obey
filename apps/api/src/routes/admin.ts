@@ -228,4 +228,81 @@ router.delete('/roles/:id', auth, requireRole('ADMINISTRATEUR'), async (req, res
   }
 });
 
+// GET /admin/departments
+router.get('/departments', auth, requireRole('ADMINISTRATEUR'), async (_req, res) => {
+  try {
+    const depts = await prisma.department.findMany({
+      orderBy: { code: 'asc' },
+      include: { _count: { select: { starDepts: true } } },
+    });
+    res.json(depts.map(d => ({ ...d, memberCount: d._count.starDepts })));
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /admin/departments/:code
+router.patch('/departments/:code', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const code = req.params['code'] as string;
+  const { actif, nom, couleur, confidentiel, pilotage } = req.body as { actif?: boolean; nom?: string; couleur?: string; confidentiel?: boolean; pilotage?: boolean };
+  try {
+    const dept = await prisma.department.update({
+      where: { code },
+      data: { ...(actif !== undefined && { actif }), ...(nom && { nom }), ...(couleur && { couleur }), ...(confidentiel !== undefined && { confidentiel }), ...(pilotage !== undefined && { pilotage }) },
+    });
+    await prisma.auditLog.create({
+      data: { userId: req.user!.id, action: 'UPDATE_DEPARTMENT', entite: 'Department', entityId: code, meta: req.body, tone: 'primary' },
+    });
+    res.json(dept);
+  } catch {
+    res.status(500).json({ error: 'Department not found or internal error' });
+  }
+});
+
+// GET /admin/templates
+router.get('/templates', auth, requireRole('ADMINISTRATEUR'), async (_req, res) => {
+  try {
+    const templates = await prisma.eventTemplate.findMany({
+      include: { needs: true },
+      orderBy: { id: 'asc' },
+    });
+    res.json(templates);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /admin/templates/:id
+router.patch('/templates/:id', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const id = parseInt(req.params['id'] as string);
+  if (isNaN(id)) { res.status(400).json({ error: 'Invalid id' }); return; }
+  const { actif, nom } = req.body as { actif?: boolean; nom?: string };
+  try {
+    const tpl = await prisma.eventTemplate.update({
+      where: { id },
+      data: { ...(actif !== undefined && { actif }), ...(nom && { nom }) },
+      include: { needs: true },
+    });
+    res.json(tpl);
+  } catch {
+    res.status(500).json({ error: 'Template not found or internal error' });
+  }
+});
+
+// POST /admin/templates
+router.post('/templates', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const { nom, needs } = req.body as { nom: string; needs?: { deptCode: string; requis: number }[] };
+  if (!nom) { res.status(400).json({ error: 'nom required' }); return; }
+  try {
+    const tpl = await prisma.eventTemplate.create({
+      data: { nom, needs: needs ? { create: needs } : undefined },
+      include: { needs: true },
+    });
+    res.status(201).json(tpl);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
+

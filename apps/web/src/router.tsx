@@ -21,6 +21,10 @@ const ValidationsPage = lazy(() => import('@/pages/referent/ValidationsPage'))
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
 const AdminAuditPage = lazy(() => import('@/pages/admin/AdminAuditPage'))
 const AdminRolesPage = lazy(() => import('@/pages/admin/AdminRolesPage'))
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
+const AdminDeptsPage = lazy(() => import('@/pages/admin/AdminDeptsPage'))
+const AdminModelesPage = lazy(() => import('@/pages/admin/AdminModelesPage'))
+const AdminParametresPage = lazy(() => import('@/pages/admin/AdminParametresPage'))
 const PastoralDashboard = lazy(() => import('@/pages/pastoral/PastoralDashboard'))
 const PastoralStarDetailPage = lazy(() => import('@/pages/pastoral/PastoralStarDetailPage'))
 const DiscipulatPage = lazy(() => import('@/pages/pastoral/DiscipulatPage'))
@@ -89,10 +93,12 @@ export function AppRouter() {
 
           {/* Espace Administrateur */}
           <Route path="/admin" element={<RequireAuth><AdminLayout><AdminDashboard /></AdminLayout></RequireAuth>} />
-          <Route path="/admin/users" element={<RequireAuth><AdminLayout><ValidationsPage /></AdminLayout></RequireAuth>} />
+          <Route path="/admin/users" element={<RequireAuth><AdminLayout><AdminUsersPage /></AdminLayout></RequireAuth>} />
           <Route path="/admin/roles" element={<RequireAuth><AdminLayout><AdminRolesPage /></AdminLayout></RequireAuth>} />
           <Route path="/admin/audit" element={<RequireAuth><AdminLayout><AdminAuditPage /></AdminLayout></RequireAuth>} />
-          <Route path="/admin/parametres" element={<RequireAuth><AdminLayout><CoordParametresPage /></AdminLayout></RequireAuth>} />
+          <Route path="/admin/parametres" element={<RequireAuth><AdminLayout><AdminParametresPage /></AdminLayout></RequireAuth>} />
+          <Route path="/admin/departements" element={<RequireAuth><AdminLayout><AdminDeptsPage /></AdminLayout></RequireAuth>} />
+          <Route path="/admin/modeles" element={<RequireAuth><AdminLayout><AdminModelesPage /></AdminLayout></RequireAuth>} />
 
           {/* Espace Corps Pastoral */}
           <Route path="/pastoral" element={<RequireAuth><PastoralLayout><PastoralDashboard /></PastoralLayout></RequireAuth>} />
