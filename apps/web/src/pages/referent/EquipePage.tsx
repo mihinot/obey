@@ -6,6 +6,13 @@ import { Avatar } from '@/components/primitives/Avatar'
 import { Tabs } from '@/components/primitives/Tabs'
 import { ProgressBar } from '@/components/primitives/ProgressBar'
 import { stars, type Star } from '@/lib/api'
+
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+type PendingUser = { id: number; email: string; createdAt: string; star: { prenom: string; nom: string } | null }
+function apiGet<R>(path: string): Promise<R> {
+  const token = localStorage.getItem('accessToken')
+  return fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
+}
 import { T, DEPT_COLORS } from '@/tokens'
 
 const STATUT_TONE: Record<string, 'ok' | 'warn' | 'muted' | 'danger' | 'accent'> = {
@@ -21,11 +28,14 @@ function fiabColor(f: number) {
 export default function EquipePage() {
   const navigate = useNavigate()
   const [starList, setStarList] = useState<Star[]>([])
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('all')
 
   useEffect(() => {
-    stars.list().then(setStarList).finally(() => setLoading(false))
+    Promise.all([stars.list(), apiGet<PendingUser[]>('/admin/users?statut=EnAttente')])
+      .then(([s, p]) => { setStarList(s); setPendingUsers(p) })
+      .finally(() => setLoading(false))
   }, [])
 
   const filtered = starList.filter((s) => {
@@ -49,14 +59,33 @@ export default function EquipePage() {
         items={[
           { id: 'all', label: 'Tous' },
           { id: 'actif', label: 'Actifs' },
-          { id: 'attente', label: 'En attente' },
+          { id: 'attente', label: `En attente (${pendingUsers.length})` },
           { id: 'pause', label: 'Pause / Anciens' },
         ]}
         value={tab}
         onChange={setTab}
       />
 
-      <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
+      {tab === 'attente' && (
+        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {loading && <div style={{ color: T.muted, fontSize: '13px' }}>Chargement…</div>}
+          {!loading && pendingUsers.length === 0 && <div style={{ color: T.muted, fontSize: '13px' }}>Aucun compte en attente</div>}
+          {pendingUsers.map(u => (
+            <Card key={u.id} pad={16}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Avatar name={u.star ? `${u.star.prenom} ${u.star.nom}` : u.email} size={36} />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '14px', color: T.ink }}>{u.star ? `${u.star.prenom} ${u.star.nom}` : u.email}</div>
+                  <div style={{ fontSize: '12px', color: T.muted }}>{u.email} · {new Date(u.createdAt).toLocaleDateString('fr-FR')}</div>
+                </div>
+                <div style={{ marginLeft: 'auto' }}><Badge tone="warn">En attente</Badge></div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: '16px', display: tab === 'attente' ? 'none' : 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
         {loading && <div style={{ color: T.muted, fontSize: '13px', padding: '20px 0' }}>Chargement…</div>}
         {filtered.map((star) => (
           <Card key={star.id} pad={16} hover onClick={() => navigate(`/referent/equipe/${star.id}`)}>

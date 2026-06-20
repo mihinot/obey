@@ -137,7 +137,7 @@ export default function AdminUsersPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                {['Membre', 'Départements', 'Statut STAR', 'Compte', 'Charge'].map(h => (
+                {['Membre', 'Départements', 'Statut STAR', 'Compte', 'Rôles'].map(h => (
                   <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: T.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                 ))}
               </tr>

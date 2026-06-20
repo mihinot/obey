@@ -4,6 +4,12 @@ import { Card } from '@/components/primitives/Card'
 import { Badge } from '@/components/primitives/Badge'
 import { ProgressBar } from '@/components/primitives/ProgressBar'
 import { events, stars, type EventSummary, type Star } from '@/lib/api'
+
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+function apiGet<R>(path: string): Promise<R> {
+  const token = localStorage.getItem('accessToken')
+  return fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
+}
 import { T, DEPT_COLORS } from '@/tokens'
 
 const STATUT_TONE: Record<string, 'warn' | 'ok' | 'muted' | 'danger'> = {
@@ -17,18 +23,19 @@ export default function CoordDashboard() {
   const navigate = useNavigate()
   const [eventList, setEventList] = useState<EventSummary[]>([])
   const [starList, setStarList] = useState<Star[]>([])
+  const [pendingCount, setPendingCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([events.list(), stars.list()])
-      .then(([e, s]) => { setEventList(e); setStarList(s) })
+    Promise.all([events.list(), stars.list(), apiGet<{ id: number }[]>('/admin/users?statut=EnAttente')])
+      .then(([e, s, pending]) => { setEventList(e); setStarList(s); setPendingCount(pending.length) })
       .finally(() => setLoading(false))
   }, [])
 
   // Aggregations
   const total = starList.length
   const actifs = starList.filter(s => s.statut === 'Actif').length
-  const enAttente = starList.filter(s => (s as never as { user: { statut: string } }).user?.statut === 'EnAttente' || s.statut === 'EnAttente' as never).length
+  const enAttente = pendingCount
   const aValider = eventList.filter(e => e.statut === 'A_VALIDER').length
   const publies = eventList.filter(e => e.statut === 'PUBLIE').length
 
@@ -86,7 +93,7 @@ export default function CoordDashboard() {
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {prochains.map(ev => (
-              <Card key={ev.id} pad={16} hover onClick={() => navigate(`/referent/planning/${ev.id}`)}>
+              <Card key={ev.id} pad={16} hover onClick={() => navigate(`/coordination/planning/${ev.id}`)}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '14px', color: T.ink }}>{ev.nom}</div>

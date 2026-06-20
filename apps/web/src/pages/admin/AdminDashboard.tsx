@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     Promise.all([
       api<AdminUser[]>('/admin/users'),
-      api<{ logs: AuditLog[] }>('/admin/audit-logs?limit=10'),
+      api<{ logs: AuditLog[] }>('/admin/audit-logs?limit=10').catch(() => ({ logs: [] as AuditLog[] })),
     ])
       .then(([u, l]) => { setUsers(u); setLogs(l.logs) })
       .finally(() => setLoading(false))
