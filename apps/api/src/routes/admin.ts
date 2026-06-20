@@ -241,6 +241,33 @@ router.get('/departments', auth, requireRole('ADMINISTRATEUR'), async (_req, res
   }
 });
 
+// POST /admin/departments
+router.post('/departments', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+  const { code, nom, couleur, description, confidentiel, pilotage } = req.body as {
+    code: string; nom: string; couleur?: string; description?: string; confidentiel?: boolean; pilotage?: boolean;
+  };
+  if (!code || !nom) { res.status(400).json({ error: 'code et nom sont requis' }); return; }
+  try {
+    const dept = await prisma.department.create({
+      data: {
+        code: code.toUpperCase().trim(),
+        nom,
+        couleur: couleur ?? '#7c5cd6',
+        description: description ?? null,
+        confidentiel: confidentiel ?? false,
+        pilotage: pilotage ?? false,
+        actif: true,
+      },
+    });
+    await prisma.auditLog.create({
+      data: { userId: req.user!.id, action: 'CREATE_DEPARTMENT', entite: 'Department', entityId: dept.code, meta: req.body, tone: 'ok' },
+    });
+    res.status(201).json({ ...dept, memberCount: 0 });
+  } catch {
+    res.status(409).json({ error: 'Ce code de département existe déjà' });
+  }
+});
+
 // PATCH /admin/departments/:code
 router.patch('/departments/:code', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
   const code = req.params['code'] as string;

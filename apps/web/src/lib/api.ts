@@ -71,8 +71,10 @@ export const auth = {
     }),
   me: () =>
     request<{
-      user: { id: number; email: string; statut: string }
-      star: { prenom: string; nom: string }
+      id: number
+      email: string
+      statut: string
+      star: { prenom: string; nom: string } | null
       roles: { type: string }[]
     }>('/auth/me'),
   logout: () => {

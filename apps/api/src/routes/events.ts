@@ -107,6 +107,10 @@ const UpdateEventSchema = z.object({
   fin: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   lieu: z.string().optional(),
   statut: z.enum(['BROUILLON', 'EN_GENERATION', 'A_VALIDER', 'PUBLIE', 'ANNULE']).optional(),
+  needs: z.array(z.object({
+    deptCode: z.string(),
+    requis: z.number().int().min(1),
+  })).optional(),
 });
 
 // PATCH /events/:id
@@ -120,13 +124,22 @@ router.patch('/:id', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'ADM
     return;
   }
 
+  const { needs, ...fields } = parsed.data;
+
   try {
     const event = await prisma.event.update({
       where: { id },
       data: {
-        ...parsed.data,
-        ...(parsed.data.date ? { date: new Date(parsed.data.date) } : {}),
+        ...fields,
+        ...(fields.date ? { date: new Date(fields.date) } : {}),
+        ...(needs !== undefined ? {
+          needs: {
+            deleteMany: {},
+            createMany: { data: needs },
+          },
+        } : {}),
       },
+      include: { needs: true },
     });
     res.json(event);
   } catch {

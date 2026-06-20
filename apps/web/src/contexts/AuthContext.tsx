@@ -34,14 +34,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const data = await auth.me()
       const user: User = {
-        id: data.user.id,
-        email: data.user.email,
-        statut: data.user.statut,
-        prenom: data.star.prenom,
-        nom: data.star.nom,
+        id: data.id,
+        email: data.email,
+        statut: data.statut,
+        prenom: data.star?.prenom ?? '',
+        nom: data.star?.nom ?? '',
         roles: data.roles.map((r) => r.type),
       }
-      if (data.user.statut === 'EnAttente') {
+      if (data.statut === 'EnAttente') {
         setState({ status: 'pending' })
       } else {
         setState({ status: 'authenticated', user })
