@@ -4,19 +4,21 @@ import { DeskShell } from '@/components/shells/DeskShell'
 import { useAuth } from '@/contexts/AuthContext'
 
 const NAV = [
-  { id: 'dashboard',    icon: 'home',     label: 'Dashboard' },
-  { id: 'planning',     icon: 'calendar', label: 'Planning' },
-  { id: 'equipe',       icon: 'users',    label: 'Équipe' },
-  { id: 'validations',  icon: 'check',    label: 'Validations' },
-  { id: 'alertes',      icon: 'alert',    label: 'Alertes' },
+  { id: 'dashboard',       icon: 'home',     label: 'Dashboard' },
+  { id: 'planning',        icon: 'calendar', label: 'Planning' },
+  { id: 'equipe',          icon: 'users',    label: 'Équipe' },
+  { id: 'remplacements',   icon: 'alert',    label: 'Remplacements' },
+  { id: 'validations',     icon: 'check',    label: 'Validations' },
+  { id: 'alertes',         icon: 'bell',     label: 'Alertes' },
 ]
 
 const ROUTE: Record<string, string> = {
-  dashboard:   '/referent',
-  planning:    '/referent/planning',
-  equipe:      '/referent/equipe',
-  validations: '/referent/validations',
-  alertes:     '/referent/alertes',
+  dashboard:     '/referent',
+  planning:      '/referent/planning',
+  equipe:        '/referent/equipe',
+  remplacements: '/referent/remplacements',
+  validations:   '/referent/validations',
+  alertes:       '/referent/alertes',
 }
 
 export function ReferentLayout({ children }: { children: React.ReactNode }) {

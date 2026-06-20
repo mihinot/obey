@@ -171,4 +171,41 @@ router.delete('/availabilities/:id', auth, async (req, res) => {
   }
 });
 
+// GET /me/notifications
+router.get('/notifications', auth, async (req, res) => {
+  try {
+    const notifs = await prisma.notification.findMany({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    res.json(notifs);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /me/notifications/:id/read
+router.patch('/notifications/:id/read', auth, async (req, res) => {
+  const id = parseInt(req.params['id'] as string);
+  if (isNaN(id)) { res.status(400).json({ error: 'Invalid id' }); return; }
+  try {
+    await prisma.notification.update({ where: { id, userId: req.user!.id }, data: { lu: true } });
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /me/notifications/read-all
+router.patch('/notifications/read-all', auth, async (req, res) => {
+  try {
+    await prisma.notification.updateMany({ where: { userId: req.user!.id, lu: false }, data: { lu: true } });
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
+

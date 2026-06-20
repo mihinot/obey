@@ -30,6 +30,9 @@ const PastoralStarDetailPage = lazy(() => import('@/pages/pastoral/PastoralStarD
 const DiscipulatPage = lazy(() => import('@/pages/pastoral/DiscipulatPage'))
 const CoordDashboard = lazy(() => import('@/pages/coordination/CoordDashboard'))
 const CoordParametresPage = lazy(() => import('@/pages/coordination/CoordParametresPage'))
+const CoordAlertesPage = lazy(() => import('@/pages/coordination/CoordAlertesPage'))
+const CoordStatsPage = lazy(() => import('@/pages/coordination/CoordStatsPage'))
+const RemplacementsPage = lazy(() => import('@/pages/referent/RemplacementsPage'))
 const StarAccueil = lazy(() => import('@/pages/star/StarAccueil'))
 const StarPlanning = lazy(() => import('@/pages/star/StarPlanning'))
 const StarAgenda = lazy(() => import('@/pages/star/StarAgenda'))
@@ -89,6 +92,7 @@ export function AppRouter() {
           <Route path="/referent/planning/:id" element={<RequireAuth><ReferentLayout><EventDetailPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/equipe" element={<RequireAuth><ReferentLayout><EquipePage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/equipe/:id" element={<RequireAuth><ReferentLayout><StarDetailPage /></ReferentLayout></RequireAuth>} />
+          <Route path="/referent/remplacements" element={<RequireAuth><ReferentLayout><RemplacementsPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/alertes" element={<RequireAuth><ReferentLayout><AlertesPage /></ReferentLayout></RequireAuth>} />
           <Route path="/referent/validations" element={<RequireAuth><ReferentLayout><ValidationsPage /></ReferentLayout></RequireAuth>} />
 
@@ -112,6 +116,8 @@ export function AppRouter() {
           <Route path="/coordination/planning/:id" element={<RequireAuth><CoordLayout><EventDetailPage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/equipe" element={<RequireAuth><CoordLayout><EquipePage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/validations" element={<RequireAuth><CoordLayout><ValidationsPage /></CoordLayout></RequireAuth>} />
+          <Route path="/coordination/alertes" element={<RequireAuth><CoordLayout><CoordAlertesPage /></CoordLayout></RequireAuth>} />
+          <Route path="/coordination/stats" element={<RequireAuth><CoordLayout><CoordStatsPage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/parametres" element={<RequireAuth><CoordLayout><CoordParametresPage /></CoordLayout></RequireAuth>} />
 
           {/* Espace STAR mobile */}

@@ -163,4 +163,100 @@ router.post('/:id/publish', auth, requireRole('REFERENT', 'COORDINATION_GENERALE
   }
 });
 
+// GET /assignments/desistees — désistements sur événements à venir (référent)
+router.get('/assignments/desistees', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'ADMINISTRATEUR'), async (_req, res) => {
+  const now = new Date();
+  try {
+    const assignments = await prisma.assignment.findMany({
+      where: { statut: 'Desistee', event: { date: { gte: now }, statut: { in: ['PUBLIE', 'A_VALIDER'] } } },
+      include: {
+        star: { select: { id: true, prenom: true, nom: true, statut: true, fiab: true, charge: true, departments: { select: { deptCode: true } } } },
+        event: { select: { id: true, nom: true, date: true, debut: true, fin: true } },
+      },
+      orderBy: { event: { date: 'asc' } },
+    });
+    res.json(assignments);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /assignments/candidates/:eventId/:deptCode — STARs disponibles pour remplacement
+router.get('/assignments/candidates/:eventId/:deptCode', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'ADMINISTRATEUR'), async (req, res) => {
+  const eventId = parseInt(req.params['eventId'] as string);
+  const deptCode = req.params['deptCode'] as string;
+  if (isNaN(eventId)) { res.status(400).json({ error: 'Invalid eventId' }); return; }
+  try {
+    const event = await prisma.event.findUnique({ where: { id: eventId }, select: { date: true } });
+    if (!event) { res.status(404).json({ error: 'Event not found' }); return; }
+
+    // STARs déjà affectés à cet événement
+    const alreadyAssigned = await prisma.assignment.findMany({
+      where: { eventId, statut: { not: 'Desistee' } },
+      select: { starId: true },
+    });
+    const excludedIds = alreadyAssigned.map(a => a.starId);
+
+    // Indisponibilités ce jour-là
+    const indispos = await prisma.availability.findMany({
+      where: { dateFrom: { lte: event.date }, dateTo: { gte: event.date } },
+      select: { starId: true },
+    });
+    const indispoIds = indispos.map(a => a.starId);
+
+    const candidates = await prisma.star.findMany({
+      where: {
+        statut: { in: ['Actif', 'Occasionnel'] },
+        departments: { some: { deptCode } },
+        id: { notIn: [...excludedIds, ...indispoIds] },
+      },
+      select: { id: true, prenom: true, nom: true, statut: true, fiab: true, charge: true, departments: { select: { deptCode: true } } },
+      orderBy: [{ fiab: 'desc' }, { charge: 'asc' }],
+    });
+    res.json(candidates);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /assignments/:id/replace — affecter un remplaçant
+router.post('/assignments/:id/replace', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'ADMINISTRATEUR'), async (req, res) => {
+  const id = parseInt(req.params['id'] as string);
+  const { newStarId } = req.body as { newStarId: number };
+  if (isNaN(id) || !newStarId) { res.status(400).json({ error: 'Invalid params' }); return; }
+  try {
+    const original = await prisma.assignment.findUnique({
+      where: { id }, include: { event: { select: { id: true, nom: true, date: true } } },
+    });
+    if (!original) { res.status(404).json({ error: 'Assignment not found' }); return; }
+
+    const newAssignment = await prisma.assignment.create({
+      data: { starId: newStarId, eventId: original.eventId, deptCode: original.deptCode, statut: 'Publiee' },
+    });
+
+    const newStar = await prisma.star.findUnique({ where: { id: newStarId }, include: { user: { select: { email: true } } } });
+    if (newStar) {
+      const dateStr = original.event.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      await prisma.notification.create({
+        data: { userId: newStar.userId, titre: `Remplacement — ${original.event.nom}`, msg: `Vous remplacez un STAR au département ${original.deptCode} le ${dateStr}.`, canal: 'INTERNE', tone: 'warn' },
+      });
+      await sendMail({
+        to: newStar.user.email,
+        subject: `[OBEY] Remplacement — ${original.event.nom}`,
+        text: `Bonjour ${newStar.prenom},\n\nVous êtes sollicité(e) pour remplacer un STAR au département ${original.deptCode} lors de l'événement ${original.event.nom} (${dateStr}).\n\nConnectez-vous sur OBEY pour confirmer.\n\nMerci !`,
+        html: `<p>Bonjour <strong>${newStar.prenom}</strong>,</p><p>Vous êtes sollicité(e) pour remplacer un STAR au département <strong>${original.deptCode}</strong> lors de <strong>${original.event.nom}</strong> (${dateStr}).</p><p>Connectez-vous sur OBEY pour confirmer.</p>`,
+      }).catch(() => {});
+    }
+
+    await prisma.auditLog.create({
+      data: { userId: req.user!.id, action: 'REPLACE_STAR', entite: 'Assignment', entityId: String(id), meta: { newStarId }, tone: 'primary' },
+    });
+
+    res.status(201).json(newAssignment);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
+

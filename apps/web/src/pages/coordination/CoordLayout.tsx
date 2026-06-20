@@ -4,17 +4,21 @@ import { DeskShell } from '@/components/shells/DeskShell'
 import { useAuth } from '@/contexts/AuthContext'
 
 const NAV = [
-  { id: 'dashboard',   icon: 'home',     label: 'Vue globale' },
-  { id: 'planning',    icon: 'calendar', label: 'Planning' },
-  { id: 'equipe',      icon: 'users',    label: 'Équipes' },
-  { id: 'validations', icon: 'check',    label: 'Validations' },
-  { id: 'parametres',  icon: 'settings', label: 'Paramètres' },
+  { id: 'dashboard',     icon: 'home',     label: 'Vue globale' },
+  { id: 'planning',      icon: 'calendar', label: 'Planning' },
+  { id: 'equipe',        icon: 'users',    label: 'Équipes' },
+  { id: 'alertes',       icon: 'alert',    label: 'Alertes' },
+  { id: 'stats',         icon: 'list',     label: 'Statistiques' },
+  { id: 'validations',   icon: 'check',    label: 'Validations' },
+  { id: 'parametres',    icon: 'settings', label: 'Paramètres' },
 ]
 
 const ROUTE: Record<string, string> = {
   dashboard:   '/coordination',
   planning:    '/coordination/planning',
   equipe:      '/coordination/equipe',
+  alertes:     '/coordination/alertes',
+  stats:       '/coordination/stats',
   validations: '/coordination/validations',
   parametres:  '/coordination/parametres',
 }

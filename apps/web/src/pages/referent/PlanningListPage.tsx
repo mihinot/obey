@@ -4,6 +4,7 @@ import { Card } from '@/components/primitives/Card'
 import { Badge } from '@/components/primitives/Badge'
 import { Btn } from '@/components/primitives/Btn'
 import { Tabs } from '@/components/primitives/Tabs'
+import { EventForm } from '@/components/EventForm'
 import { events, type EventSummary } from '@/lib/api'
 import { T } from '@/tokens'
 
@@ -23,10 +24,11 @@ export default function PlanningListPage() {
   const [eventList, setEventList] = useState<EventSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('all')
+  const [showForm, setShowForm] = useState(false)
 
-  useEffect(() => {
-    events.list().then(setEventList).finally(() => setLoading(false))
-  }, [])
+  const load = () => { setLoading(true); events.list().then(setEventList).finally(() => setLoading(false)) }
+
+  useEffect(() => { load() }, [])
 
   const filtered = eventList.filter((e) => {
     if (tab === 'all') return e.statut !== 'ANNULE'
@@ -44,10 +46,17 @@ export default function PlanningListPage() {
           </h1>
           <p style={{ fontSize: '13px', color: T.sub, marginTop: '4px' }}>Gestion des événements et affectations</p>
         </div>
-        <Btn variant="primary" size="sm" icon="plus">
+        <Btn variant="primary" size="sm" icon="plus" onClick={() => setShowForm(true)}>
           Nouvel événement
         </Btn>
       </div>
+
+      {showForm && (
+        <EventForm
+          onSaved={(ev) => { setShowForm(false); navigate(`/referent/planning/${ev.id}`) }}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
 
       <Tabs
         items={[
