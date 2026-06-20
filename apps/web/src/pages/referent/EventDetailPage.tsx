@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Card } from '@/components/primitives/Card'
 import { Badge } from '@/components/primitives/Badge'
 import { Btn } from '@/components/primitives/Btn'
@@ -29,6 +29,8 @@ function ScorePill({ score }: { score: number }) {
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const backPath = location.pathname.startsWith('/coordination') ? '/coordination/planning' : '/referent/planning'
   const [event, setEvent] = useState<EventDetail | null>(null)
   const [planResult, setPlanResult] = useState<PlanningResult | null>(null)
   const [loading, setLoading] = useState(true)
@@ -99,7 +101,7 @@ export default function EventDetailPage() {
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <button
-          onClick={() => navigate('/referent/planning')}
+          onClick={() => navigate(backPath)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: T.primary, marginBottom: '12px', padding: 0 }}
         >
           ← Retour au planning

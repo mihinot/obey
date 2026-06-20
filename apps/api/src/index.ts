@@ -9,6 +9,7 @@ import meRouter from './routes/me';
 import departmentsRouter from './routes/departments';
 import adminRouter from './routes/admin';
 import statsRouter from './routes/stats';
+import pastoralRouter from './routes/pastoral';
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/me', meRouter);
 app.use('/departments', departmentsRouter);
 app.use('/admin', adminRouter);
 app.use('/stats', statsRouter);
+app.use('/pastoral', pastoralRouter);
 
 const PORT = process.env.PORT ?? 3000;
 app.listen(PORT, () => {

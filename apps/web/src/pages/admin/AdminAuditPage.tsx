@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/primitives/Card'
+import { Btn } from '@/components/primitives/Btn'
 import { ApiError } from '@/lib/api'
 import { T } from '@/tokens'
 
@@ -36,6 +37,27 @@ export default function AdminAuditPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [allLogs, setAllLogs] = useState<AuditLog[]>([])
+
+  const exportCSV = () => {
+    const rows = allLogs.length > 0 ? allLogs : logs
+    const csv = [
+      ['Date', 'Action', 'Entité', 'ID Entité', 'Utilisateur', 'Email'],
+      ...rows.map(l => [
+        new Date(l.createdAt).toLocaleString('fr-FR'),
+        l.action, l.entite, l.entityId ?? '',
+        l.user.star ? `${l.user.star.prenom} ${l.user.star.nom}` : '',
+        l.user.email,
+      ]),
+    ].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `audit_${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -44,11 +66,21 @@ export default function AdminAuditPage() {
       .finally(() => setLoading(false))
   }, [page])
 
+  useEffect(() => {
+    // Pré-charger tous les logs pour l'export (limité à 1000)
+    api<{ logs: AuditLog[] }>('/admin/audit-logs?limit=1000&offset=0').then(d => setAllLogs(d.logs)).catch(() => {})
+  }, [])
+
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '22px', color: T.ink }}>Journal d'audit</h1>
-        <p style={{ fontSize: '13px', color: T.sub, marginTop: '4px' }}>{total} entrée{total > 1 ? 's' : ''} au total</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div>
+          <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '22px', color: T.ink }}>Journal d'audit</h1>
+          <p style={{ fontSize: '13px', color: T.sub, marginTop: '4px' }}>{total} entrée{total > 1 ? 's' : ''} au total</p>
+        </div>
+        <Btn variant="soft" size="sm" onClick={exportCSV}>
+          Exporter CSV
+        </Btn>
       </div>
 
       {loading && <div style={{ color: T.muted, fontSize: '13px' }}>Chargement…</div>}

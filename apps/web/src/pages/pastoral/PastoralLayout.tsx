@@ -4,15 +4,23 @@ import { DeskShell } from '@/components/shells/DeskShell'
 import { useAuth } from '@/contexts/AuthContext'
 
 const NAV = [
-  { id: 'dashboard', icon: 'home',     label: 'Vue d\'ensemble' },
-  { id: 'stars',     icon: 'users',    label: 'Fiches STARs' },
-  { id: 'disciples', icon: 'check',    label: 'Discipulat' },
+  { id: 'dashboard',    icon: 'home',     label: 'Vue d\'ensemble' },
+  { id: 'stars',        icon: 'users',    label: 'Fiches STARs' },
+  { id: 'suivi',        icon: 'heart',    label: 'Suivi pastoral' },
+  { id: 'intercession', icon: 'shield',   label: 'Intercession' },
+  { id: 'disciples',    icon: 'check',    label: 'Discipulat' },
+  { id: 'alertes',      icon: 'alert',    label: 'Alertes' },
+  { id: 'stats',        icon: 'list',     label: 'Statistiques' },
 ]
 
 const ROUTE: Record<string, string> = {
-  dashboard: '/pastoral',
-  stars:     '/pastoral/stars',
-  disciples: '/pastoral/disciples',
+  dashboard:    '/pastoral',
+  stars:        '/pastoral/stars',
+  suivi:        '/pastoral/suivi',
+  intercession: '/pastoral/intercession',
+  disciples:    '/pastoral/disciples',
+  alertes:      '/pastoral/alertes',
+  stats:        '/pastoral/stats',
 }
 
 export function PastoralLayout({ children }: { children: React.ReactNode }) {
@@ -29,7 +37,7 @@ export function PastoralLayout({ children }: { children: React.ReactNode }) {
   return (
     <DeskShell
       scope={{ label: 'Corps Pastoral', sub: 'Espace' }}
-      accent="#2e6b3e"
+      accent="#c97fb0"
       nav={NAV}
       active={activeId}
       onNav={(id) => navigate(ROUTE[id] ?? '/pastoral')}

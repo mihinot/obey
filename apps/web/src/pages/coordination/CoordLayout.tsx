@@ -6,21 +6,25 @@ import { useAuth } from '@/contexts/AuthContext'
 const NAV = [
   { id: 'dashboard',     icon: 'home',     label: 'Vue globale' },
   { id: 'planning',      icon: 'calendar', label: 'Planning' },
+  { id: 'validations',   icon: 'check',    label: 'Validations' },
   { id: 'equipe',        icon: 'users',    label: 'Équipes' },
+  { id: 'departements',  icon: 'list',     label: 'Départements' },
   { id: 'alertes',       icon: 'alert',    label: 'Alertes' },
   { id: 'stats',         icon: 'list',     label: 'Statistiques' },
-  { id: 'validations',   icon: 'check',    label: 'Validations' },
+  { id: 'exports',       icon: 'dl',       label: 'Exports' },
   { id: 'parametres',    icon: 'settings', label: 'Paramètres' },
 ]
 
 const ROUTE: Record<string, string> = {
-  dashboard:   '/coordination',
-  planning:    '/coordination/planning',
-  equipe:      '/coordination/equipe',
-  alertes:     '/coordination/alertes',
-  stats:       '/coordination/stats',
-  validations: '/coordination/validations',
-  parametres:  '/coordination/parametres',
+  dashboard:    '/coordination',
+  planning:     '/coordination/planning',
+  validations:  '/coordination/validations',
+  equipe:       '/coordination/equipe',
+  departements: '/coordination/departements',
+  alertes:      '/coordination/alertes',
+  stats:        '/coordination/stats',
+  exports:      '/coordination/exports',
+  parametres:   '/coordination/parametres',
 }
 
 export function CoordLayout({ children }: { children: React.ReactNode }) {

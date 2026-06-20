@@ -6,6 +6,7 @@ import { StarLayout } from '@/pages/star/StarLayout'
 import { CoordLayout } from '@/pages/coordination/CoordLayout'
 import { PastoralLayout } from '@/pages/pastoral/PastoralLayout'
 import { AdminLayout } from '@/pages/admin/AdminLayout'
+import { VieLayout } from '@/pages/vie/VieLayout'
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
@@ -28,10 +29,21 @@ const AdminParametresPage = lazy(() => import('@/pages/admin/AdminParametresPage
 const PastoralDashboard = lazy(() => import('@/pages/pastoral/PastoralDashboard'))
 const PastoralStarDetailPage = lazy(() => import('@/pages/pastoral/PastoralStarDetailPage'))
 const DiscipulatPage = lazy(() => import('@/pages/pastoral/DiscipulatPage'))
+const SuiviPastoralPage = lazy(() => import('@/pages/pastoral/SuiviPastoralPage'))
+const IntercessionPage = lazy(() => import('@/pages/pastoral/IntercessionPage'))
+const AlertesPastoralesPage = lazy(() => import('@/pages/pastoral/AlertesPastoralesPage'))
+const StatsGlobalesPage = lazy(() => import('@/pages/pastoral/StatsGlobalesPage'))
+const VieBienEtrePage = lazy(() => import('@/pages/vie/VieBienEtrePage'))
+const VieChargesPage = lazy(() => import('@/pages/vie/VieChargesPage'))
+const VieMultiPage = lazy(() => import('@/pages/vie/VieMultiPage'))
+const VieAlertesPage = lazy(() => import('@/pages/vie/VieAlertesPage'))
 const CoordDashboard = lazy(() => import('@/pages/coordination/CoordDashboard'))
 const CoordParametresPage = lazy(() => import('@/pages/coordination/CoordParametresPage'))
 const CoordAlertesPage = lazy(() => import('@/pages/coordination/CoordAlertesPage'))
 const CoordStatsPage = lazy(() => import('@/pages/coordination/CoordStatsPage'))
+const CoordValidationsPage = lazy(() => import('@/pages/coordination/CoordValidationsPage'))
+const CoordDepartementsPage = lazy(() => import('@/pages/coordination/CoordDepartementsPage'))
+const CoordExportsPage = lazy(() => import('@/pages/coordination/CoordExportsPage'))
 const RemplacementsPage = lazy(() => import('@/pages/referent/RemplacementsPage'))
 const StarAccueil = lazy(() => import('@/pages/star/StarAccueil'))
 const StarPlanning = lazy(() => import('@/pages/star/StarPlanning'))
@@ -46,7 +58,7 @@ function RoleDispatch() {
   if (roles.includes('ADMINISTRATEUR')) return <Navigate to="/admin" replace />
   if (roles.includes('CORPS_PASTORAL')) return <Navigate to="/pastoral" replace />
   if (roles.includes('COORDINATION_GENERALE')) return <Navigate to="/coordination" replace />
-  if (roles.includes('VIE_DES_STARS')) return <Navigate to="/coordination/equipe" replace />
+  if (roles.includes('VIE_DES_STARS')) return <Navigate to="/vie" replace />
   if (roles.includes('REFERENT')) return <Navigate to="/referent" replace />
   return <Navigate to="/star" replace />
 }
@@ -109,16 +121,28 @@ export function AppRouter() {
           <Route path="/pastoral" element={<RequireAuth><PastoralLayout><PastoralDashboard /></PastoralLayout></RequireAuth>} />
           <Route path="/pastoral/stars/:id" element={<RequireAuth><PastoralLayout><PastoralStarDetailPage /></PastoralLayout></RequireAuth>} />
           <Route path="/pastoral/disciples" element={<RequireAuth><PastoralLayout><DiscipulatPage /></PastoralLayout></RequireAuth>} />
+          <Route path="/pastoral/suivi" element={<RequireAuth><PastoralLayout><SuiviPastoralPage /></PastoralLayout></RequireAuth>} />
+          <Route path="/pastoral/intercession" element={<RequireAuth><PastoralLayout><IntercessionPage /></PastoralLayout></RequireAuth>} />
+          <Route path="/pastoral/alertes" element={<RequireAuth><PastoralLayout><AlertesPastoralesPage /></PastoralLayout></RequireAuth>} />
+          <Route path="/pastoral/stats" element={<RequireAuth><PastoralLayout><StatsGlobalesPage /></PastoralLayout></RequireAuth>} />
 
           {/* Espace Coordination */}
           <Route path="/coordination" element={<RequireAuth><CoordLayout><CoordDashboard /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/planning" element={<RequireAuth><CoordLayout><PlanningListPage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/planning/:id" element={<RequireAuth><CoordLayout><EventDetailPage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/equipe" element={<RequireAuth><CoordLayout><EquipePage /></CoordLayout></RequireAuth>} />
-          <Route path="/coordination/validations" element={<RequireAuth><CoordLayout><ValidationsPage /></CoordLayout></RequireAuth>} />
+          <Route path="/coordination/validations" element={<RequireAuth><CoordLayout><CoordValidationsPage /></CoordLayout></RequireAuth>} />
+          <Route path="/coordination/departements" element={<RequireAuth><CoordLayout><CoordDepartementsPage /></CoordLayout></RequireAuth>} />
+          <Route path="/coordination/exports" element={<RequireAuth><CoordLayout><CoordExportsPage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/alertes" element={<RequireAuth><CoordLayout><CoordAlertesPage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/stats" element={<RequireAuth><CoordLayout><CoordStatsPage /></CoordLayout></RequireAuth>} />
           <Route path="/coordination/parametres" element={<RequireAuth><CoordLayout><CoordParametresPage /></CoordLayout></RequireAuth>} />
+
+          {/* Espace Vie des STARs */}
+          <Route path="/vie" element={<RequireAuth><VieLayout><VieBienEtrePage /></VieLayout></RequireAuth>} />
+          <Route path="/vie/charges" element={<RequireAuth><VieLayout><VieChargesPage /></VieLayout></RequireAuth>} />
+          <Route path="/vie/multi" element={<RequireAuth><VieLayout><VieMultiPage /></VieLayout></RequireAuth>} />
+          <Route path="/vie/alertes" element={<RequireAuth><VieLayout><VieAlertesPage /></VieLayout></RequireAuth>} />
 
           {/* Espace STAR mobile */}
           <Route path="/star" element={<RequireAuth><StarLayout><StarAccueil /></StarLayout></RequireAuth>} />

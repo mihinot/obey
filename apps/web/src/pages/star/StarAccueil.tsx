@@ -5,6 +5,7 @@ import { Badge } from '@/components/primitives/Badge'
 import { useAuth } from '@/contexts/AuthContext'
 import { me, type MyAssignment } from '@/lib/meApi'
 import { ApiError } from '@/lib/api'
+import { EventDetailSheet } from '@/components/EventDetailSheet'
 import { T, DEPT_COLORS } from '@/tokens'
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -44,6 +45,7 @@ export default function StarAccueil() {
   const [assignments, setAssignments] = useState<MyAssignment[]>([])
   const [churchEvents, setChurchEvents] = useState<ChurchEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [sheetEvent, setSheetEvent] = useState<ChurchEvent | null>(null)
 
   const user = state.status === 'authenticated' ? state.user : null
 
@@ -56,6 +58,16 @@ export default function StarAccueil() {
       setChurchEvents(events.slice(0, 3))
     }).finally(() => setLoading(false))
   }, [])
+
+  // Charge mensuelle : nombre d'affectations confirmées ce mois / seuil recommandé (4)
+  const thisMonth = new Date()
+  const monthServices = assignments.filter(a => {
+    const d = new Date(a.event.date)
+    return d.getMonth() === thisMonth.getMonth() && d.getFullYear() === thisMonth.getFullYear() && a.statut !== 'Desistee'
+  }).length
+  const CHARGE_MAX = 4
+  const chargePct = Math.min(100, Math.round((monthServices / CHARGE_MAX) * 100))
+  const chargeColor = chargePct >= 100 ? T.danger : chargePct >= 75 ? T.warn : T.ok
 
   const now = new Date()
   const myUpcoming = assignments
@@ -153,6 +165,39 @@ export default function StarAccueil() {
         </Card>
       </div>
 
+      {/* Indicateur de charge mensuelle */}
+      {!loading && (
+        <Card pad={16} style={{ marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '14px', color: T.ink }}>
+              Charge ce mois
+            </div>
+            <span style={{
+              fontSize: '11px', fontWeight: 700, color: chargeColor,
+              background: chargeColor + '18', borderRadius: '6px', padding: '2px 8px',
+            }}>
+              {monthServices}/{CHARGE_MAX} services
+            </span>
+          </div>
+          <div style={{ height: '8px', background: T.border, borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', width: `${chargePct}%`, borderRadius: '4px',
+              background: chargeColor, transition: 'width 0.5s ease',
+            }} />
+          </div>
+          {chargePct >= 100 && (
+            <div style={{ marginTop: '8px', fontSize: '12px', color: T.danger }}>
+              ⚠️ Charge maximale atteinte ce mois
+            </div>
+          )}
+          {chargePct >= 75 && chargePct < 100 && (
+            <div style={{ marginTop: '8px', fontSize: '12px', color: T.warn }}>
+              Charge élevée — pense à ton équilibre
+            </div>
+          )}
+        </Card>
+      )}
+
       {/* Prochains événements de l'église */}
       <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '15px', color: T.ink }}>
@@ -176,7 +221,7 @@ export default function StarAccueil() {
           return (
             <div
               key={ev.id}
-              onClick={() => navigate('/star/agenda')}
+              onClick={() => setSheetEvent(ev)}
               style={{
                 background: '#fff',
                 borderRadius: T.radius,
@@ -218,6 +263,16 @@ export default function StarAccueil() {
           )
         })}
       </div>
+
+      {/* Bottom sheet événement */}
+      {sheetEvent && (
+        <EventDetailSheet
+          event={sheetEvent}
+          assignment={assignments.find(a => a.event.id === sheetEvent.id) ?? null}
+          onClose={() => setSheetEvent(null)}
+          onUpdated={() => me.assignments().then(setAssignments)}
+        />
+      )}
 
       {/* Mes prochains services (liste) */}
       {myUpcoming.length > 1 && (
