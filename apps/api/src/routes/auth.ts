@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 import { auth } from '../middleware/auth';
+import { OAuth2Client } from 'google-auth-library';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -185,6 +186,95 @@ router.get('/me', auth, async (req, res) => {
     }
 
     res.json(user);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+// POST /auth/google
+router.post('/google', async (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    res.status(503).json({ error: 'Google login not configured' });
+    return;
+  }
+
+  const { idToken } = req.body as { idToken?: unknown };
+  if (typeof idToken !== 'string' || !idToken) {
+    res.status(400).json({ error: 'Missing idToken' });
+    return;
+  }
+
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  let googleId: string;
+  let email: string;
+  let prenom: string;
+  let nom: string;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.sub || !payload.email) {
+      res.status(401).json({ error: 'Invalid Google token' });
+      return;
+    }
+    googleId = payload.sub;
+    email = payload.email;
+    prenom = payload.given_name ?? '';
+    nom = payload.family_name ?? '';
+  } catch {
+    res.status(401).json({ error: 'Invalid Google token' });
+    return;
+  }
+
+  try {
+    let user = await prisma.user.findUnique({ where: { googleId } });
+
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email } });
+      if (user) {
+        user = await prisma.user.update({ where: { id: user.id }, data: { googleId } });
+      }
+    }
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          googleId,
+          statut: 'EnAttente',
+          star: {
+            create: { prenom, nom, tel: '' },
+          },
+          roles: {
+            create: { type: 'STAR' },
+          },
+        },
+      });
+    }
+
+    if (user.statut === 'Refuse' || user.statut === 'Suspendu') {
+      res.status(403).json({ error: 'Account suspended or refused', statut: user.statut });
+      return;
+    }
+
+    if (user.statut === 'EnAttente') {
+      res.status(200).json({ status: 'pending' });
+      return;
+    }
+
+    const accessToken = signAccess({ id: user.id, email: user.email, statut: user.statut });
+    const refreshToken = signRefresh(user.id);
+
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await prisma.refreshToken.create({
+      data: { token: refreshToken, userId: user.id, expiresAt },
+    });
+
+    res.json({ accessToken, refreshToken });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }

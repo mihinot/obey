@@ -19,6 +19,7 @@ type AuthState =
 type AuthCtx = {
   state: AuthState
   login: (email: string, password: string) => Promise<void>
+  loginWithGoogle: (idToken: string) => Promise<void>
   logout: () => Promise<void>
   refresh: () => Promise<void>
 }
@@ -61,12 +62,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await loadMe()
   }
 
+  const loginWithGoogle = async (idToken: string) => {
+    const data = await auth.googleLogin(idToken)
+    if ('status' in data && data.status === 'pending') {
+      setState({ status: 'pending' })
+      return
+    }
+    const tokens = data as { accessToken: string; refreshToken: string }
+    localStorage.setItem('accessToken', tokens.accessToken)
+    localStorage.setItem('refreshToken', tokens.refreshToken)
+    await loadMe()
+  }
+
   const logout = async () => {
     await auth.logout()
     setState({ status: 'unauthenticated' })
   }
 
-  return <Ctx.Provider value={{ state, login, logout, refresh: loadMe }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ state, login, loginWithGoogle, logout, refresh: loadMe }}>{children}</Ctx.Provider>
 }
 
 export function useAuth() {

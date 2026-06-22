@@ -77,6 +77,10 @@ export const auth = {
       star: { prenom: string; nom: string } | null
       roles: { type: string }[]
     }>('/auth/me'),
+  googleLogin: (idToken: string) =>
+    request<{ accessToken: string; refreshToken: string } | { status: 'pending' }>('/auth/google', {
+      method: 'POST', body: JSON.stringify({ idToken }),
+    }),
   logout: () => {
     const refreshToken = localStorage.getItem('refreshToken')
     clearTokens()
@@ -114,6 +118,7 @@ export type EventDetail = EventSummary & {
 
 export const events = {
   list: () => request<EventSummary[]>('/events'),
+  upcoming: () => request<EventSummary[]>('/events?upcoming=true'),
   get: (id: number) => request<EventDetail>(`/events/${id}`),
   create: (data: Omit<EventSummary, 'id' | 'statut'> & { needs?: EventNeed[] }) =>
     request<EventDetail>('/events', { method: 'POST', body: JSON.stringify(data) }),
