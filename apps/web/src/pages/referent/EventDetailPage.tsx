@@ -4,6 +4,7 @@ import { Card } from '@/components/primitives/Card'
 import { Badge } from '@/components/primitives/Badge'
 import { Btn } from '@/components/primitives/Btn'
 import { Avatar } from '@/components/primitives/Avatar'
+import { EventForm } from '@/components/EventForm'
 import { events, type EventDetail, type PlanningResult } from '@/lib/api'
 import { T, DEPT_COLORS } from '@/tokens'
 
@@ -36,6 +37,7 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [error, setError] = useState('')
 
   const load = useCallback(() => {
@@ -98,6 +100,22 @@ export default function EventDetailPage() {
 
   return (
     <div>
+      {editing && event && (
+        <EventForm
+          initial={{
+            id: event.id,
+            nom: event.nom,
+            type: event.type,
+            date: event.date,
+            debut: event.debut,
+            fin: event.fin,
+            lieu: event.lieu ?? '',
+            needs: event.needs,
+          }}
+          onSaved={() => { setEditing(false); load() }}
+          onCancel={() => setEditing(false)}
+        />
+      )}
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <button
@@ -120,6 +138,11 @@ export default function EventDetailPage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
+            {['BROUILLON', 'A_VALIDER'].includes(event.statut) && (
+              <Btn variant="soft" onClick={() => setEditing(true)}>
+                Modifier
+              </Btn>
+            )}
             {canGenerate && (
               <Btn variant="soft" icon="spark" loading={generating} onClick={handleGenerate}>
                 Générer le planning

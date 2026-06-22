@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/primitives/Card'
 import { ApiError } from '@/lib/api'
-import { T, DEPT_COLORS } from '@/tokens'
+import { T } from '@/tokens'
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -46,7 +46,7 @@ export default function AlertesPage() {
 
   useEffect(() => {
     Promise.all([
-      api<Desistement[]>('/assignments/desistees'),
+      api<Desistement[]>('/events/assignments/desistees'),
       api<Event[]>('/events?upcoming=true'),
       api<Star[]>('/stars'),
     ]).then(([desist, events, stars]) => {

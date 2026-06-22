@@ -47,7 +47,7 @@ export default function RemplacementsPage() {
 
   const load = () => {
     setLoading(true)
-    api<Desistement[]>('/assignments/desistees').then(setDesistements).finally(() => setLoading(false))
+    api<Desistement[]>('/events/assignments/desistees').then(setDesistements).finally(() => setLoading(false))
   }
 
   useEffect(() => { load() }, [])
@@ -58,7 +58,7 @@ export default function RemplacementsPage() {
     setSelected(d)
     setLoadingCandidates(true)
     try {
-      const cands = await api<Candidate[]>(`/assignments/candidates/${d.event.id}/${d.deptCode}`)
+      const cands = await api<Candidate[]>(`/events/assignments/candidates/${d.event.id}/${d.deptCode}`)
       setCandidates(cands)
     } catch { setCandidates([]) } finally { setLoadingCandidates(false) }
   }
@@ -67,7 +67,7 @@ export default function RemplacementsPage() {
     if (!selected) return
     setReplacing(true)
     try {
-      await api(`/assignments/${selected.id}/replace`, { method: 'POST', body: JSON.stringify({ newStarId }) })
+      await api(`/events/assignments/${selected.id}/replace`, { method: 'POST', body: JSON.stringify({ newStarId }) })
       showFlash('Remplacement effectué — le STAR a été notifié')
       setSelected(null)
       load()

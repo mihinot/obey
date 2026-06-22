@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ApiError } from '@/lib/api'
 import { T, DEPT_COLORS } from '@/tokens'
 
@@ -28,12 +28,13 @@ type EventFormProps = {
   onCancel: () => void
 }
 
-const ALL_DEPTS = ['ACC', 'MUS', 'MED', 'INT', 'ENF', 'JEU', 'LOG', 'TECH']
+type Dept = { code: string; nom: string; couleur: string }
 
 const EVENT_TYPES = ['Culte dominical', 'Culte spécial', 'Concert', 'Formation', 'Réunion', 'Autre']
 
 export function EventForm({ initial, onSaved, onCancel }: EventFormProps) {
   const isEdit = !!initial?.id
+  const [depts, setDepts] = useState<Dept[]>([])
   const [form, setForm] = useState<EventFormData>({
     nom: initial?.nom ?? '',
     type: initial?.type ?? 'Culte dominical',
@@ -45,6 +46,10 @@ export function EventForm({ initial, onSaved, onCancel }: EventFormProps) {
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    api<Dept[]>('/admin/departments').then(setDepts).catch(() => {})
+  }, [])
 
   const setField = (field: keyof EventFormData, value: EventFormData[keyof EventFormData]) =>
     setForm(f => ({ ...f, [field]: value }))
@@ -192,10 +197,11 @@ export function EventForm({ initial, onSaved, onCancel }: EventFormProps) {
               Besoins par département
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {ALL_DEPTS.map(code => {
+              {depts.map(dept => {
+                const code = dept.code
                 const need = form.needs.find(n => n.deptCode === code)
                 const selected = !!need
-                const color = DEPT_COLORS[code] ?? T.primary
+                const color = dept.couleur ? dept.couleur : (DEPT_COLORS[code] ?? T.primary)
                 return (
                   <div key={code} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button

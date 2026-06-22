@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/primitives/Card'
 import { Avatar } from '@/components/primitives/Avatar'
-import { Btn } from '@/components/primitives/Btn'
 import { Tabs } from '@/components/primitives/Tabs'
 import { ApiError } from '@/lib/api'
 import { T } from '@/tokens'

@@ -11,12 +11,6 @@ type ChurchEvent = {
   debut: string
   fin: string
   lieu: string
-  needs: { deptCode: string; requis: number }[]
-  _count: { assignments: number }
-}
-
-function fmtDay(d: string) {
-  return new Date(d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 function fmtMonthKey(d: string) {
@@ -30,7 +24,7 @@ export default function StarAgenda() {
 
   useEffect(() => {
     Promise.all([
-      eventsApi.upcoming() as Promise<ChurchEvent[]>,
+      eventsApi.upcoming() as unknown as Promise<ChurchEvent[]>,
       me.assignments(),
     ]).then(([evs, asgn]) => {
       setEvents(evs)
@@ -131,20 +125,6 @@ export default function StarAgenda() {
                           {ev.debut}–{ev.fin}{ev.lieu ? ` · ${ev.lieu}` : ''}
                         </div>
 
-                        {/* Besoins par département */}
-                        {ev.needs.length > 0 && (
-                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                            {ev.needs.map(n => (
-                              <span key={n.deptCode} style={{
-                                fontSize: '11px', fontWeight: 700, padding: '2px 7px', borderRadius: '7px',
-                                color: DEPT_COLORS[n.deptCode] ?? T.primary,
-                                background: (DEPT_COLORS[n.deptCode] ?? T.primary) + '18',
-                              }}>
-                                {n.deptCode} ×{n.requis}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     </div>
 

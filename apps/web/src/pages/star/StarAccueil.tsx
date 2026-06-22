@@ -35,9 +35,6 @@ function fmt(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
-function fmtShort(d: string) {
-  return new Date(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
-}
 
 export default function StarAccueil() {
   const { state } = useAuth()

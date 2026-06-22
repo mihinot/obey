@@ -243,8 +243,8 @@ router.get('/departments', auth, requireRole('ADMINISTRATEUR'), async (_req, res
 
 // POST /admin/departments
 router.post('/departments', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
-  const { code, nom, couleur, description, confidentiel, pilotage } = req.body as {
-    code: string; nom: string; couleur?: string; description?: string; confidentiel?: boolean; pilotage?: boolean;
+  const { code, nom, couleur, confidentiel, pilotage } = req.body as {
+    code: string; nom: string; couleur?: string; confidentiel?: boolean; pilotage?: boolean;
   };
   if (!code || !nom) { res.status(400).json({ error: 'code et nom sont requis' }); return; }
   try {
@@ -253,7 +253,6 @@ router.post('/departments', auth, requireRole('ADMINISTRATEUR'), async (req, res
         code: code.toUpperCase().trim(),
         nom,
         couleur: couleur ?? '#7c5cd6',
-        description: description ?? null,
         confidentiel: confidentiel ?? false,
         pilotage: pilotage ?? false,
         actif: true,

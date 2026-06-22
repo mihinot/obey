@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/primitives/Card'
-import { Avatar } from '@/components/primitives/Avatar'
 import { stars, type Star } from '@/lib/api'
 import { T } from '@/tokens'
 
