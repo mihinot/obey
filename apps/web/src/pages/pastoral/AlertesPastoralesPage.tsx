@@ -23,7 +23,7 @@ export default function AlertesPastoralesPage() {
       const result: Alerte[] = []
 
       // STARs en pause / inactifs
-      list.filter(s => s.statut === 'EN_PAUSE').forEach(s => {
+      list.filter(s => s.statut === 'EnPause').forEach(s => {
         result.push({
           id: `pause-${s.id}`, type: 'Volontaire inactif', niveau: 'ATTENTION',
           titre: `${s.prenom} ${s.nom} en pause`,
@@ -43,17 +43,17 @@ export default function AlertesPastoralesPage() {
       })
 
       // STARs surchargés
-      list.filter(s => s.charge >= 80 && s.statut === 'ACTIF').forEach(s => {
+      list.filter(s => s.charge >= 4 && s.statut === 'Actif').forEach(s => {
         result.push({
           id: `surcharge-${s.id}`, type: 'Surcharge de service', niveau: 'CRITIQUE',
           titre: `${s.prenom} ${s.nom} — charge critique`,
-          msg: `Charge à ${s.charge}% — risque d'épuisement, veiller à l'équilibre`,
+          msg: `Charge ${s.charge} — risque d'épuisement, veiller à l'équilibre`,
           starId: s.id,
         })
       })
 
-      // STARs peu sollicités (charge < 10% et actifs depuis longtemps)
-      list.filter(s => s.charge < 10 && s.statut === 'ACTIF').slice(0, 3).forEach(s => {
+      // STARs peu sollicités (actifs avec charge 0)
+      list.filter(s => s.charge === 0 && s.statut === 'Actif').slice(0, 3).forEach(s => {
         result.push({
           id: `peu-${s.id}`, type: 'Peu sollicité', niveau: 'INFO',
           titre: `${s.prenom} ${s.nom}`,

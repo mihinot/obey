@@ -27,7 +27,7 @@ export default function VieMultiPage() {
   }, [])
 
   const multi = starList
-    .filter(s => s.departments.length >= 2 && s.statut === 'ACTIF')
+    .filter(s => s.departments.length >= 2 && s.statut === 'Actif')
     .sort((a, b) => b.departments.length - a.departments.length || b.charge - a.charge)
 
   if (loading) return <div style={{ color: T.muted, fontSize: '13px', padding: '20px 0' }}>Chargement…</div>
@@ -53,8 +53,8 @@ export default function VieMultiPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
         {multi.map(s => {
-          const isRisque = s.departments.length >= 2 && s.charge >= 60
-          const chargeColor = s.charge >= 80 ? T.danger : s.charge >= 60 ? T.warn : T.ok
+          const isRisque = s.departments.length >= 2 && s.charge >= 2
+          const chargeColor = s.charge >= 4 ? T.danger : s.charge >= 2 ? T.warn : T.ok
 
           return (
             <Card key={s.id} pad={16} style={{ border: isRisque ? `1.5px solid ${T.warn}` : undefined }}>
@@ -82,8 +82,8 @@ export default function VieMultiPage() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '12px', color: T.sub, flexShrink: 0 }}>Charge</span>
-                <ProgressBar value={s.charge} color={chargeColor} />
-                <span style={{ fontWeight: 700, color: chargeColor, fontSize: '12.5px', flexShrink: 0 }}>{s.charge}%</span>
+                <ProgressBar value={Math.min(100, s.charge * 20)} color={chargeColor} />
+                <span style={{ fontWeight: 700, color: chargeColor, fontSize: '12.5px', flexShrink: 0 }}>{s.charge}</span>
               </div>
             </Card>
           )

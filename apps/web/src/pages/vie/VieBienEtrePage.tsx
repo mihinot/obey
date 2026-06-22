@@ -8,13 +8,15 @@ import { T } from '@/tokens'
 
 const VIE_ACCENT = '#4fa57e'
 
+// charge is an integer 0-N (count of services). Thresholds: >=4 critical, >=2 elevated.
 function chargeNiveau(charge: number): { label: string; color: string; tone: 'ok' | 'warn' | 'danger' | 'muted' } {
-  if (charge >= 80) return { label: 'Critique', color: T.danger, tone: 'danger' }
-  if (charge >= 60) return { label: 'Élevée', color: T.warn, tone: 'warn' }
-  if (charge >= 30) return { label: 'Normale', color: T.ok, tone: 'ok' }
-  if (charge > 0) return { label: 'Disponible', color: VIE_ACCENT, tone: 'ok' }
-  return { label: 'Inactive', color: T.muted, tone: 'muted' }
+  if (charge >= 4) return { label: 'Critique', color: T.danger, tone: 'danger' }
+  if (charge >= 2) return { label: 'Élevée', color: T.warn, tone: 'warn' }
+  if (charge === 1) return { label: 'Normale', color: T.ok, tone: 'ok' }
+  return { label: 'Disponible', color: VIE_ACCENT, tone: 'ok' }
 }
+
+function chargePct(charge: number) { return Math.min(100, Math.round(charge * 20)) }
 
 function DonutChart({ value, max, size = 120 }: { value: number; max: number; size?: number }) {
   const pct = max === 0 ? 0 : Math.min(1, value / max)
@@ -48,14 +50,14 @@ export default function VieBienEtrePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    stars.list({ statut: 'ACTIF' }).then(setStarList).finally(() => setLoading(false))
+    stars.list({ statut: 'Actif' }).then(setStarList).finally(() => setLoading(false))
   }, [])
 
   const total = starList.length
-  const surcharges = starList.filter(s => s.charge >= 60)
-  const peu = starList.filter(s => s.charge < 10)
+  const surcharges = starList.filter(s => s.charge >= 2)
+  const peu = starList.filter(s => s.charge === 0)
   const multi = starList.filter(s => s.departments.length >= 2)
-  const equilibres = starList.filter(s => s.charge < 60 && s.charge >= 10).length
+  const equilibres = starList.filter(s => s.charge === 1).length
 
   if (loading) return <div style={{ color: T.muted, fontSize: '13px', padding: '20px 0' }}>Chargement…</div>
 
@@ -128,8 +130,8 @@ export default function VieBienEtrePage() {
                   <Avatar name={`${s.prenom} ${s.nom}`} size={34} />
                   <span style={{ flex: 1, fontWeight: 600, fontSize: '13.5px', color: T.ink }}>{s.prenom} {s.nom}</span>
                   <div style={{ width: '120px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ProgressBar value={s.charge} max={100} color={niv.color} />
-                    <span style={{ fontWeight: 700, color: niv.color, fontSize: '12px', width: '30px' }}>{s.charge}%</span>
+                    <ProgressBar value={chargePct(s.charge)} max={100} color={niv.color} />
+                    <span style={{ fontWeight: 700, color: niv.color, fontSize: '12px', width: '30px' }}>{s.charge}</span>
                   </div>
                   <Badge tone={niv.tone}>{niv.label}</Badge>
                 </div>

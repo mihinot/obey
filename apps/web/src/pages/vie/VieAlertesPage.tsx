@@ -24,18 +24,18 @@ export default function VieAlertesPage() {
     stars.list().then((list: Star[]) => {
       const result: Alerte[] = []
 
-      list.filter(s => s.statut === 'ACTIF').forEach(s => {
-        if (s.charge >= 80) {
+      list.filter(s => s.statut === 'Actif').forEach(s => {
+        if (s.charge >= 4) {
           result.push({
             id: `crit-${s.id}`, niveau: 'CRITIQUE', type: 'Surcharge critique',
-            titre: `${s.prenom} ${s.nom} — charge à ${s.charge}%`,
+            titre: `${s.prenom} ${s.nom} — charge ${s.charge}`,
             msg: 'Risque d\'épuisement — intervention immédiate recommandée',
             star: s,
           })
-        } else if (s.charge >= 60) {
+        } else if (s.charge >= 2) {
           result.push({
             id: `haut-${s.id}`, niveau: 'ATTENTION', type: 'Charge élevée',
-            titre: `${s.prenom} ${s.nom} — ${s.charge}% de charge`,
+            titre: `${s.prenom} ${s.nom} — charge ${s.charge}`,
             msg: 'Surveiller l\'évolution et éviter de nouveaux services ce mois',
             star: s,
           })
@@ -50,7 +50,7 @@ export default function VieAlertesPage() {
           })
         }
 
-        if (s.desist >= 3 && s.charge >= 40) {
+        if (s.desist >= 3 && s.charge >= 2) {
           result.push({
             id: `desist-${s.id}`, niveau: 'ATTENTION', type: 'Désistements + charge',
             titre: `${s.prenom} ${s.nom} — ${s.desist} désistements`,
@@ -59,10 +59,10 @@ export default function VieAlertesPage() {
           })
         }
 
-        if (s.fiab < 50 && s.charge >= 30) {
+        if (s.fiab < 0.5 && s.charge >= 1) {
           result.push({
             id: `fiab-${s.id}`, niveau: 'INFO', type: 'Fiabilité basse',
-            titre: `${s.prenom} ${s.nom} — fiabilité ${s.fiab}%`,
+            titre: `${s.prenom} ${s.nom} — fiabilité ${Math.round(s.fiab * 100)}%`,
             msg: 'Taux de fiabilité en baisse — envisager un entretien',
             star: s,
           })

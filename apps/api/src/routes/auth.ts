@@ -280,4 +280,70 @@ router.post('/google', async (req, res) => {
   }
 });
 
+// POST /auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body as { email?: string };
+  if (!email) { res.status(400).json({ error: 'email required' }); return; }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    // Toujours répondre 200 pour ne pas révéler si l'email existe
+    if (!user || user.statut !== 'Actif') {
+      res.json({ message: 'Si ce compte existe, un e-mail a été envoyé.' });
+      return;
+    }
+
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1h
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { resetToken: token, resetTokenExpires: expires },
+    });
+
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reinitialiser-mot-de-passe?token=${token}`;
+
+    const { sendMail } = await import('../services/mailer');
+    await sendMail({
+      to: email,
+      subject: '[OBEY] Réinitialisation de mot de passe',
+      text: `Bonjour,\n\nCliquez sur ce lien pour réinitialiser votre mot de passe (valable 1h) :\n${resetUrl}\n\nSi vous n'avez pas fait cette demande, ignorez cet e-mail.`,
+      html: `<p>Bonjour,</p><p>Cliquez sur ce lien pour réinitialiser votre mot de passe (valable 1h) :</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>Si vous n'avez pas fait cette demande, ignorez cet e-mail.</p>`,
+    }).catch(() => {});
+
+    res.json({ message: 'Si ce compte existe, un e-mail a été envoyé.' });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body as { token?: string; password?: string };
+  if (!token || !password || password.length < 8) {
+    res.status(400).json({ error: 'token et mot de passe (8 caractères min) requis' });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { resetToken: token } });
+    if (!user || !user.resetTokenExpires || user.resetTokenExpires < new Date()) {
+      res.status(400).json({ error: 'Lien invalide ou expiré' });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash, resetToken: null, resetTokenExpires: null },
+    });
+
+    res.json({ message: 'Mot de passe mis à jour' });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

@@ -137,7 +137,7 @@ router.post('/users/:id/reject', auth, requireRole('REFERENT', 'COORDINATION_GEN
 });
 
 // GET /admin/parameters
-router.get('/parameters', auth, requireRole('ADMINISTRATEUR'), async (_req, res) => {
+router.get('/parameters', auth, requireRole('ADMINISTRATEUR', 'COORDINATION_GENERALE'), async (_req, res) => {
   try {
     const params = await prisma.parameter.findMany({ orderBy: [{ groupe: 'asc' }, { cle: 'asc' }] });
     res.json(params.map(p => ({ key: p.cle, value: p.val, description: p.desc, label: p.label, type: p.type, unite: p.unite, groupe: p.groupe })));
@@ -147,7 +147,7 @@ router.get('/parameters', auth, requireRole('ADMINISTRATEUR'), async (_req, res)
 });
 
 // PUT /admin/parameters/:key
-router.put('/parameters/:key', auth, requireRole('ADMINISTRATEUR'), async (req, res) => {
+router.put('/parameters/:key', auth, requireRole('ADMINISTRATEUR', 'COORDINATION_GENERALE'), async (req, res) => {
   const key = req.params['key'] as string;
   const { value } = req.body as { value: string };
   if (!value && value !== '0') { res.status(400).json({ error: 'value required' }); return; }

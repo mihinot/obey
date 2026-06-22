@@ -12,6 +12,7 @@ const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const PendingPage = lazy(() => import('@/pages/auth/PendingPage'))
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'))
 const ReferentDashboard = lazy(() => import('@/pages/referent/ReferentDashboard'))
 const PlanningListPage = lazy(() => import('@/pages/referent/PlanningListPage'))
 const EventDetailPage = lazy(() => import('@/pages/referent/EventDetailPage'))
@@ -97,6 +98,7 @@ export function AppRouter() {
           <Route path="/inscription" element={<RequireGuest><RegisterPage /></RequireGuest>} />
           <Route path="/attente" element={<PendingPage />} />
           <Route path="/mot-de-passe-oublie" element={<RequireGuest><ForgotPasswordPage /></RequireGuest>} />
+          <Route path="/reinitialiser-mot-de-passe" element={<RequireGuest><ResetPasswordPage /></RequireGuest>} />
 
           {/* Espace Référent */}
           <Route path="/referent" element={<RequireAuth><ReferentLayout><ReferentDashboard /></ReferentLayout></RequireAuth>} />

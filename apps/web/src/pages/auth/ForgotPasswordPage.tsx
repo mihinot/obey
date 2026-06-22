@@ -12,11 +12,19 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!email) return
     setLoading(true)
-    // Endpoint à implémenter — on simule le succès pour l'instant
-    await new Promise((r) => setTimeout(r, 800))
-    setLoading(false)
-    setSent(true)
+    try {
+      const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+      await fetch(`${BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      setSent(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (sent) {

@@ -6,12 +6,13 @@ import { stars, type Star } from '@/lib/api'
 import { T, DEPT_COLORS } from '@/tokens'
 
 function chargeNiveau(charge: number): { label: string; color: string; tone: 'ok' | 'warn' | 'danger' | 'muted' } {
-  if (charge >= 80) return { label: 'Critique', color: T.danger, tone: 'danger' }
-  if (charge >= 60) return { label: 'Élevée', color: T.warn, tone: 'warn' }
-  if (charge >= 30) return { label: 'Normale', color: T.ok, tone: 'ok' }
-  if (charge > 0) return { label: 'Disponible', color: '#4fa57e', tone: 'ok' }
-  return { label: 'Inactive', color: T.muted, tone: 'muted' }
+  if (charge >= 4) return { label: 'Critique', color: T.danger, tone: 'danger' }
+  if (charge >= 2) return { label: 'Élevée', color: T.warn, tone: 'warn' }
+  if (charge === 1) return { label: 'Normale', color: T.ok, tone: 'ok' }
+  return { label: 'Disponible', color: '#4fa57e', tone: 'ok' }
 }
+
+function chargePct(charge: number) { return Math.min(100, charge * 20) }
 
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max === 0 ? 0 : Math.min(100, (value / max) * 100)
@@ -108,9 +109,9 @@ export default function VieChargesPage() {
                       </td>
                       <td style={{ padding: '11px 16px', width: '200px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <ProgressBar value={s.charge} max={100} color={niv.color} />
+                          <ProgressBar value={chargePct(s.charge)} max={100} color={niv.color} />
                           <span style={{ fontWeight: 700, color: niv.color, fontSize: '12px', flexShrink: 0 }}>
-                            {s.charge}%
+                            {s.charge}
                           </span>
                         </div>
                       </td>
