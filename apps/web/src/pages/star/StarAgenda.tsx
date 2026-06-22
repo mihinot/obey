@@ -1,19 +1,7 @@
 import { useEffect, useState } from 'react'
-import { ApiError } from '@/lib/api'
+import { events as eventsApi } from '@/lib/api'
 import { me, type MyAssignment } from '@/lib/meApi'
 import { T, DEPT_COLORS } from '@/tokens'
-
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
-
-function apiGet<R>(path: string): Promise<R> {
-  const token = localStorage.getItem('accessToken')
-  return fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  }).then(async (r) => {
-    if (!r.ok) throw new ApiError(r.status, await r.json())
-    return r.json()
-  })
-}
 
 type ChurchEvent = {
   id: number
@@ -42,7 +30,7 @@ export default function StarAgenda() {
 
   useEffect(() => {
     Promise.all([
-      apiGet<ChurchEvent[]>('/events?upcoming=true'),
+      eventsApi.upcoming() as Promise<ChurchEvent[]>,
       me.assignments(),
     ]).then(([evs, asgn]) => {
       setEvents(evs)

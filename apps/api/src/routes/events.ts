@@ -29,9 +29,10 @@ router.get('/', auth, async (req, res) => {
         statut: true,
         needs: { select: { deptCode: true, requis: true } },
         _count: { select: { assignments: true } },
+        assignments: { where: { statut: { not: 'Desistee' } }, select: { id: true } },
       },
     });
-    res.json(events);
+    res.json(events.map(e => ({ ...e, activeAssignments: e.assignments.length })));
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }

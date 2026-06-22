@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { auth } from '../middleware/auth';
 import { requireRole } from '../middleware/roles';
-import { genererPlanning, PlanStar, PlanEvent } from '../planning/engine';
+import { genererPlanning, PlanStar, PlanEvent, PlanConfig, DEFAULT_CONFIG } from '../planning/engine';
 import { sendMail } from '../services/mailer';
 
 const router = Router();
@@ -55,7 +55,22 @@ router.post('/:id/generate', auth, requireRole('REFERENT', 'COORDINATION_GENERAL
       needs: event.needs.map((n) => ({ deptCode: n.deptCode, requis: n.requis })),
     };
 
-    const result = genererPlanning(planEvent, planStars);
+    // Charger les paramètres depuis la DB
+    const params = await prisma.parameter.findMany({
+      where: { cle: { in: ['charge_elevee_min', 'charge_critique_min', 'desist_seuil_malus', 'delai_desist_jours'] } },
+    });
+    const p = (cle: string, def: number) => {
+      const found = params.find(x => x.cle === cle);
+      return found ? (parseInt(found.val) || def) : def;
+    };
+    const cfg: PlanConfig = {
+      chargeEleveeMin: p('charge_elevee_min', DEFAULT_CONFIG.chargeEleveeMin),
+      chargeCritiqueMin: p('charge_critique_min', DEFAULT_CONFIG.chargeCritiqueMin),
+      desistSeuilMalus: p('desist_seuil_malus', DEFAULT_CONFIG.desistSeuilMalus),
+      delaiDesistJours: p('delai_desist_jours', DEFAULT_CONFIG.delaiDesistJours),
+    };
+
+    const result = genererPlanning(planEvent, planStars, cfg);
 
     // Persist assignments (delete existing proposed ones first)
     await prisma.assignment.deleteMany({

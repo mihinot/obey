@@ -26,6 +26,7 @@ type Event = {
   id: number; nom: string; date: string; debut: string
   needs: { deptCode: string; requis: number }[]
   _count: { assignments: number }
+  activeAssignments: number
 }
 
 type Star = { id: number; prenom: string; nom: string; charge: number; desist: number; departments: { deptCode: string }[] }
@@ -82,11 +83,12 @@ export default function AlertesPage() {
         })
       }
 
-      // Événements sous-dotés (moins d'affectations que requis)
+      // Événements sous-dotés (moins d'affectations actives que requis)
       events.forEach(ev => {
         const totalReqis = ev.needs.reduce((s, n) => s + n.requis, 0)
-        if (ev._count.assignments < totalReqis) {
-          const manque = totalReqis - ev._count.assignments
+        const actives = ev.activeAssignments ?? ev._count.assignments
+        if (actives < totalReqis) {
+          const manque = totalReqis - actives
           list.push({
             id: `sous-dote-${ev.id}`,
             tone: 'warn',
