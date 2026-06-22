@@ -53,7 +53,7 @@ export default function CoordAlertesPage() {
       api<Stats>('/stats/summary'),
       api<Event[]>('/events?upcoming=true'),
       api<Star[]>('/stars'),
-      api<Desistement[]>('/assignments/desistees'),
+      api<Desistement[]>('/events/assignments/desistees'),
     ]).then(([stats, events, stars, desist]) => {
       const list: Alerte[] = []
       const now = Date.now()

@@ -20,13 +20,12 @@ function api<R>(path: string, init?: RequestInit): Promise<R> {
 type Param = { key: string; value: string; description: string | null }
 
 const PARAM_LABELS: Record<string, string> = {
-  DESIST_THRESHOLD_DAYS: 'Seuil désistement tardif (jours)',
-  MAX_CHARGE: 'Charge maximale autorisée',
-  FIAB_WEIGHT: 'Poids fiabilité dans le scoring',
-  CHARGE_WEIGHT: 'Poids charge dans le scoring',
-  DEPT_WEIGHT: 'Poids département dans le scoring',
-  NOTIFY_EMAIL: 'Notifications par email',
-  NOTIFY_WHATSAPP: 'Notifications WhatsApp',
+  charge_elevee_min: 'Charge élevée (min)',
+  charge_critique_min: 'Charge critique (min)',
+  desist_seuil_malus: 'Désistements avant malus',
+  delai_desist_jours: 'Délai désistement tardif (jours)',
+  NOTIF_EMAIL: 'Notifications email',
+  NOTIF_WHATSAPP: 'Notifications WhatsApp',
 }
 
 export default function CoordParametresPage() {

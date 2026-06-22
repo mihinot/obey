@@ -114,7 +114,7 @@ const UpdateStarSchema = z.object({
 });
 
 // PATCH /stars/:id
-router.patch('/:id', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'VIE_DES_STARS', 'ADMINISTRATEUR'), async (req, res) => {
+router.patch('/:id', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'VIE_DES_STARS', 'CORPS_PASTORAL', 'ADMINISTRATEUR'), async (req, res) => {
   const id = parseInt(req.params["id"] as string);
   if (isNaN(id)) { res.status(400).json({ error: 'Invalid id' }); return; }
 

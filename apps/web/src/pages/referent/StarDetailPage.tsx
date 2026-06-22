@@ -32,7 +32,7 @@ type Assignment = {
 }
 
 const ASSIGNMENT_TONE: Record<string, 'ok' | 'warn' | 'muted' | 'danger'> = {
-  Confirmee: 'ok', Proposee: 'warn', Desistee: 'danger', Effectuee: 'ok', Absente: 'danger',
+  Confirmee: 'ok', Proposee: 'warn', Publiee: 'warn', Desistee: 'danger',
 }
 const STATUT_TONE: Record<string, 'ok' | 'warn' | 'muted' | 'danger' | 'accent'> = {
   Actif: 'ok', Occasionnel: 'accent', Nouveau: 'muted', EnPause: 'warn', Ancien: 'muted',
@@ -86,9 +86,8 @@ export default function StarDetailPage() {
   if (loading) return <div style={{ padding: '40px', color: T.muted, fontSize: '14px' }}>Chargement…</div>
   if (!star) return <div style={{ padding: '40px', color: T.danger, fontSize: '14px' }}>Membre introuvable</div>
 
-  const effectuees = assignments.filter(a => a.statut === 'Effectuee' || a.statut === 'Confirmee').length
+  const confirmees = assignments.filter(a => a.statut === 'Confirmee').length
   const desistements = assignments.filter(a => a.statut === 'Desistee').length
-  const absences = assignments.filter(a => a.statut === 'Absente').length
 
   return (
     <div>
@@ -195,8 +194,8 @@ export default function StarDetailPage() {
             <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', textAlign: 'center' }}>
               {[
                 { label: 'Services', value: assignments.length, color: T.ink },
-                { label: 'Désist.', value: desistements, color: T.warn },
-                { label: 'Absences', value: absences, color: T.danger },
+                { label: 'Confirmés', value: confirmees, color: T.ok },
+                { label: 'Désist.', value: desistements, color: T.danger },
               ].map(m => (
                 <div key={m.label} style={{ padding: '10px 4px', background: T.surface, borderRadius: T.radiusSm }}>
                   <div style={{ fontWeight: 700, fontSize: '18px', color: m.color }}>{m.value}</div>
@@ -247,9 +246,9 @@ export default function StarDetailPage() {
             ))}
           </div>
 
-          {effectuees > 0 && (
+          {confirmees > 0 && (
             <div style={{ marginTop: '16px', padding: '12px 16px', background: T.okSoft, borderRadius: T.radiusSm, fontSize: '13px', color: T.ok }}>
-              ✓ {effectuees} service{effectuees > 1 ? 's' : ''} effectué{effectuees > 1 ? 's' : ''} sur {assignments.length} assignations
+              ✓ {confirmees} service{confirmees > 1 ? 's' : ''} confirmé{confirmees > 1 ? 's' : ''} sur {assignments.length} assignations
             </div>
           )}
         </div>

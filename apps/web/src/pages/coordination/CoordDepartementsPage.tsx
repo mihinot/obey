@@ -85,7 +85,7 @@ export default function CoordDepartementsPage() {
         {activeDepts.map((dept) => {
           const color = DEPT_COLORS[dept.code] ?? T.primary
           const total = dept.starDepts.length
-          const actifs = dept.starDepts.filter(sd => sd.star.statut === 'ACTIF').length
+          const actifs = dept.starDepts.filter(sd => sd.star.statut === 'Actif').length
           const besoin = upcomingNeeds[dept.code] ?? 0
 
           return (

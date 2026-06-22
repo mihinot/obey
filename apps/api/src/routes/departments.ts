@@ -21,7 +21,7 @@ router.get('/', auth, async (_req, res) => {
 });
 
 // GET /departments/:code — détail
-router.get('/:code', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'ADMINISTRATEUR'), async (req, res) => {
+router.get('/:code', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'CORPS_PASTORAL', 'ADMINISTRATEUR'), async (req, res) => {
   try {
     const dept = await prisma.department.findUnique({
       where: { code: req.params['code'] as string },
