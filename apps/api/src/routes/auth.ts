@@ -185,7 +185,8 @@ router.get('/me', auth, async (req, res) => {
       return;
     }
 
-    res.json(user);
+    const { star, roles, ...userFields } = user;
+    res.json({ user: userFields, star, roles });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
