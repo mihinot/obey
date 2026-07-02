@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import {
   Home, Calendar, Bell, User, Users, Check, Clock, AlertTriangle, Plus,
   ChevronRight, ChevronLeft, ChevronDown, X, Grid3x3, List, Sparkles, Zap,
@@ -6,7 +6,8 @@ import {
   Search, Filter, Star, Download,
 } from 'lucide-react'
 
-const ICON_MAP: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement> & { size?: number; strokeWidth?: number }>> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ICON_MAP: Record<string, React.ComponentType<any>> = {
   home: Home,
   calendar: Calendar,
   bell: Bell,

@@ -8,10 +8,16 @@ const router = Router();
 const prisma = new PrismaClient();
 
 // GET /events
-router.get('/', auth, async (_req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
+    const { upcoming, statut } = req.query as { upcoming?: string; statut?: string }
+    const now = new Date()
     const events = await prisma.event.findMany({
-      orderBy: { date: 'desc' },
+      where: {
+        ...(upcoming === 'true' ? { date: { gte: now }, statut: 'PUBLIE' } : {}),
+        ...(statut ? { statut: statut as never } : {}),
+      },
+      orderBy: { date: upcoming === 'true' ? 'asc' : 'desc' },
       select: {
         id: true,
         nom: true,
@@ -23,9 +29,10 @@ router.get('/', auth, async (_req, res) => {
         statut: true,
         needs: { select: { deptCode: true, requis: true } },
         _count: { select: { assignments: true } },
+        assignments: { where: { statut: { not: 'Desistee' } }, select: { id: true } },
       },
     });
-    res.json(events);
+    res.json(events.map(e => ({ ...e, activeAssignments: e.assignments.length })));
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -101,6 +108,10 @@ const UpdateEventSchema = z.object({
   fin: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   lieu: z.string().optional(),
   statut: z.enum(['BROUILLON', 'EN_GENERATION', 'A_VALIDER', 'PUBLIE', 'ANNULE']).optional(),
+  needs: z.array(z.object({
+    deptCode: z.string(),
+    requis: z.number().int().min(1),
+  })).optional(),
 });
 
 // PATCH /events/:id
@@ -114,13 +125,22 @@ router.patch('/:id', auth, requireRole('REFERENT', 'COORDINATION_GENERALE', 'ADM
     return;
   }
 
+  const { needs, ...fields } = parsed.data;
+
   try {
     const event = await prisma.event.update({
       where: { id },
       data: {
-        ...parsed.data,
-        ...(parsed.data.date ? { date: new Date(parsed.data.date) } : {}),
+        ...fields,
+        ...(fields.date ? { date: new Date(fields.date) } : {}),
+        ...(needs !== undefined ? {
+          needs: {
+            deleteMany: {},
+            createMany: { data: needs },
+          },
+        } : {}),
       },
+      include: { needs: true },
     });
     res.json(event);
   } catch {

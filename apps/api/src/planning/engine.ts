@@ -1,5 +1,12 @@
 export type StarStatut = 'Nouveau' | 'Actif' | 'Occasionnel' | 'EnPause' | 'Ancien';
 
+export interface PlanConfig {
+  chargeEleveeMin: number;   // défaut 2
+  chargeCritiqueMin: number; // défaut 4
+  desistSeuilMalus: number;  // défaut 2
+  delaiDesistJours: number;  // défaut 7
+}
+
 export interface PlanStar {
   id: number;
   prenom: string;
@@ -37,6 +44,13 @@ export interface EvalResult {
 
 const EXCLUS: StarStatut[] = ['EnPause', 'Ancien'];
 
+export const DEFAULT_CONFIG: PlanConfig = {
+  chargeEleveeMin: 2,
+  chargeCritiqueMin: 4,
+  desistSeuilMalus: 2,
+  delaiDesistJours: 7,
+};
+
 function isDisponible(star: PlanStar, eventDate: Date): boolean {
   for (const indispo of star.indispos) {
     if (eventDate >= indispo.dateFrom && eventDate <= indispo.dateTo) return false;
@@ -44,19 +58,19 @@ function isDisponible(star: PlanStar, eventDate: Date): boolean {
   return true;
 }
 
-function getChargeLevel(charge: number): 'ok' | 'elevee' | 'critique' {
-  if (charge >= 4) return 'critique';
-  if (charge >= 2) return 'elevee';
+function getChargeLevel(charge: number, cfg: PlanConfig): 'ok' | 'elevee' | 'critique' {
+  if (charge >= cfg.chargeCritiqueMin) return 'critique';
+  if (charge >= cfg.chargeEleveeMin) return 'elevee';
   return 'ok';
 }
 
-export function evaluerCandidat(star: PlanStar, ctx: EvalCtx): EvalResult {
+export function evaluerCandidat(star: PlanStar, ctx: EvalCtx, cfg: PlanConfig = DEFAULT_CONFIG): EvalResult {
   const breakdown: BreakdownItem[] = [];
   let score = 0;
 
   const dispo = isDisponible(star, ctx.eventDate);
   const exclu = EXCLUS.includes(star.statut);
-  const chargeLevel = getChargeLevel(star.charge);
+  const chargeLevel = getChargeLevel(star.charge, cfg);
 
   // Bonuses
   if (dispo) {
@@ -108,7 +122,7 @@ export function evaluerCandidat(star: PlanStar, ctx: EvalCtx): EvalResult {
     breakdown.push({ label: 'Charge critique', pts: -30 });
   }
 
-  if (star.desist >= 2) {
+  if (star.desist >= cfg.desistSeuilMalus) {
     score -= 10;
     breakdown.push({ label: 'Désistements fréquents', pts: -10 });
   }
@@ -153,7 +167,8 @@ export function genererDept(
   event: PlanEvent,
   deptCode: string,
   stars: PlanStar[],
-  assignedStarIds: Set<number> = new Set()
+  assignedStarIds: Set<number> = new Set(),
+  cfg: PlanConfig = DEFAULT_CONFIG
 ): DeptResult {
   const need = event.needs.find((n) => n.deptCode === deptCode);
   const requis = need?.requis ?? 0;
@@ -165,7 +180,7 @@ export function genererDept(
       deptCode,
       eventDate: event.date,
       dejaAffecteAutreDept: assignedStarIds.has(star.id),
-    })
+    }, cfg)
   );
 
   const indispos = evaluated.filter((e) => !e.dispo).length;
@@ -191,12 +206,12 @@ export interface PlanningResult {
   totalConflits: number;
 }
 
-export function genererPlanning(event: PlanEvent, stars: PlanStar[]): PlanningResult {
+export function genererPlanning(event: PlanEvent, stars: PlanStar[], cfg: PlanConfig = DEFAULT_CONFIG): PlanningResult {
   const assignedStarIds = new Set<number>();
   const depts: DeptResult[] = [];
 
   for (const need of event.needs) {
-    const result = genererDept(event, need.deptCode, stars, assignedStarIds);
+    const result = genererDept(event, need.deptCode, stars, assignedStarIds, cfg);
     // Mark selected stars as assigned to prevent cross-dept conflicts
     for (const sel of result.selectionnes) {
       assignedStarIds.add(sel.star.id);

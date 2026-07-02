@@ -153,11 +153,12 @@ async function main() {
 
   // Parameters
   const params = [
-    { cle: 'SCORE_CHARGE_MAX', val: '10', type: 'number', label: 'Charge max', desc: 'Seuil de charge maximale', groupe: 'planning' },
-    { cle: 'SCORE_FIAB_MIN', val: '0.5', type: 'range', label: 'Fiabilité minimale', desc: 'Score de fiabilité minimum', groupe: 'planning' },
-    { cle: 'DESISTEMENT_DEADLINE_JOURS', val: '7', type: 'number', label: 'Délai désistement (jours)', desc: 'Nb de jours avant event', groupe: 'planning', unite: 'jours' },
-    { cle: 'NOTIF_EMAIL', val: 'true', type: 'toggle', label: 'Notifications email', groupe: 'notifications' },
-    { cle: 'NOTIF_WHATSAPP', val: 'false', type: 'toggle', label: 'Notifications WhatsApp', groupe: 'notifications' },
+    { cle: 'charge_elevee_min', val: '3', type: 'number', label: 'Charge élevée (min)', desc: 'Seuil à partir duquel la charge est considérée élevée (sur 5)', groupe: 'planning', unite: '' },
+    { cle: 'charge_critique_min', val: '4', type: 'number', label: 'Charge critique (min)', desc: 'Seuil à partir duquel la charge est critique — STAR non proposé', groupe: 'planning', unite: '' },
+    { cle: 'desist_seuil_malus', val: '3', type: 'number', label: 'Désistements avant malus', desc: 'Nombre de désistements déclenchant un malus de fiabilité', groupe: 'planning', unite: '' },
+    { cle: 'delai_desist_jours', val: '7', type: 'number', label: 'Délai désistement tardif (jours)', desc: 'Désistement en-deçà de ce délai déclenche une alerte', groupe: 'planning', unite: 'jours' },
+    { cle: 'NOTIF_EMAIL', val: 'true', type: 'toggle', label: 'Notifications email', desc: 'Activer les notifications par email', groupe: 'notifications', unite: '' },
+    { cle: 'NOTIF_WHATSAPP', val: 'false', type: 'toggle', label: 'Notifications WhatsApp', desc: 'Activer les notifications WhatsApp', groupe: 'notifications', unite: '' },
   ];
 
   for (const p of params) {
